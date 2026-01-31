@@ -36,4 +36,24 @@ class ChildProfile {
         totalScore: json['total_score'] as int,
         createdAt: DateTime.parse(json['created_at'] as String),
       );
+
+  ChildProfile copyWith({
+    int? id,
+    String? name,
+    int? age,
+    String? avatarId,
+    int? currentLevel,
+    int? totalScore,
+    DateTime? createdAt,
+  }) {
+    return ChildProfile(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      age: age ?? this.age,
+      avatarId: avatarId ?? this.avatarId,
+      currentLevel: currentLevel ?? this.currentLevel,
+      totalScore: totalScore ?? this.totalScore,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }

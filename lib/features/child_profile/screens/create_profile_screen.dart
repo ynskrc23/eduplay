@@ -37,12 +37,12 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
         createdAt: DateTime.now(),
       );
 
-      await _repository.createProfile(newProfile);
+      final createdProfile = await _repository.createProfile(newProfile);
 
       if (mounted) {
         // Navigate to Game Page after successful creation
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const GamePage()),
+          MaterialPageRoute(builder: (context) => GamePage(childId: createdProfile.id!)),
         );
       }
     } catch (e) {

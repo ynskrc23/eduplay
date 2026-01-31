@@ -4,8 +4,11 @@ import 'data/repositories/child_repository.dart';
 import 'features/child_profile/screens/create_profile_screen.dart';
 import 'features/game/screens/game_page.dart';
 
-void main() {
+import 'package:intl/date_symbol_data_local.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('tr_TR', null);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -54,17 +57,16 @@ class _BootScreenState extends State<BootScreen> {
     
     final repository = ChildRepository();
     
-    // You can uncomment this following line to simulate "New Device" experience
-    // await repository._dbHelper.deleteDatabase('eduplay.db'); 
-    
+    // For development: Uncomment the following line once to reset DB and apply schema changes
+    // await repository.deleteDatabaseForDev();    
     try {
-      final hasProfile = await repository.hasAnyProfile();
+      final profiles = await repository.getAllProfiles();
 
       if (mounted) {
-        if (hasProfile) {
-          // Profile exists -> Go to Game
+        if (profiles.isNotEmpty) {
+          // Profile exists -> Go to Game with the most recent profile
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const GamePage()),
+            MaterialPageRoute(builder: (context) => GamePage(childId: profiles.first.id!)),
           );
         } else {
           // No profile -> Go to Create Profile

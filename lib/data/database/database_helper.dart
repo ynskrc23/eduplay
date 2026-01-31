@@ -92,7 +92,7 @@ class DatabaseHelper {
         game_id $foreignIdType,
         level_id $foreignIdType,
         started_at $textType,
-        ended_at $textType,
+        ended_at TEXT,
         total_questions $intType,
         correct_count $intType,
         wrong_count $intType,
@@ -162,7 +162,75 @@ class DatabaseHelper {
       )
     ''');
     
-    // Initial Seed Data (Optional - e.g. ParentSettings or basic Games)
+    // Initial Seed Data
+    // 1. Create Default Game: Math Race
+    final gameId = await db.insert('game', {
+      'code': 'MATH_RACE',
+      'name': 'Matematik Yarışı',
+      'description': 'Temel toplama ve çıkarma işlemleriyle yarış.',
+      'is_active': 1,
+    });
+
+    // 2. Create Levels
+    // Level 1: 0-10 Addition
+    final level1Id = await db.insert('level', {
+      'game_id': gameId,
+      'min_value': 0,
+      'max_value': 10,
+      'digit_count': 1,
+      'difficulty': 'EASY',
+      'unlock_score': 0,
+    });
+
+    // Level 2: 0-20 Addition
+    final level2Id = await db.insert('level', {
+      'game_id': gameId,
+      'min_value': 0,
+      'max_value': 20,
+      'digit_count': 2,
+      'difficulty': 'NORMAL',
+      'unlock_score': 50, // Needs 50 score to unlock
+    });
+
+    // Level 3: 0-20 Subtraction
+    final level3Id = await db.insert('level', {
+      'game_id': gameId,
+      'min_value': 0,
+      'max_value': 20,
+      'digit_count': 2,
+      'difficulty': 'NORMAL',
+      'unlock_score': 100,
+    });
+
+    // 3. Create Question Rules
+    // Rule for Level 1: Addition 0-10
+    await db.insert('question_rule', {
+      'level_id': level1Id,
+      'operation': '+',
+      'min_operand': 0,
+      'max_operand': 10,
+      'allow_negative': 0,
+    });
+
+    // Rule for Level 2: Addition 0-20
+    await db.insert('question_rule', {
+      'level_id': level2Id,
+      'operation': '+',
+      'min_operand': 0,
+      'max_operand': 20,
+      'allow_negative': 0,
+    });
+
+    // Rule for Level 3: Subtraction 0-20
+    await db.insert('question_rule', {
+      'level_id': level3Id,
+      'operation': '-',
+      'min_operand': 0,
+      'max_operand': 20,
+      'allow_negative': 0, // Result cannot be negative
+    });
+
+    // Parent Settings Default
     await db.insert('parent_settings', {
       'max_daily_minutes': 30,
       'notifications_enabled': 1,
