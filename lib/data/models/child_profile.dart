@@ -12,7 +12,7 @@ class ChildProfile {
     required this.name,
     required this.age,
     required this.avatarId,
-    this.currentLevel = 1,
+    this.currentLevel = 0,
     this.totalScore = 0,
     required this.createdAt,
   });

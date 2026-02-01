@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'dart:math';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -15,14 +16,34 @@ class DatabaseHelper {
     return _database!;
   }
 
+  Future<void> resetDatabase() async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'eduplay.db');
+    
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+    }
+    
+    await deleteDatabase(path);
+    await database; // Re-initialize
+  }
+
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 4,
       onCreate: _createDB,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // If we are at version 1, we need to add the new levels.
+          // For simplicity in this dev environment, we can re-run the creation logic or specific seeds.
+          // But usually, deleting and re-installing is cleaner for seed changes.
+        }
+      },
     );
   }
 
@@ -171,64 +192,55 @@ class DatabaseHelper {
       'is_active': 1,
     });
 
-    // 2. Create Levels
-    // Level 1: 0-10 Addition
-    final level1Id = await db.insert('level', {
-      'game_id': gameId,
-      'min_value': 0,
-      'max_value': 10,
-      'digit_count': 1,
-      'difficulty': 'EASY',
-      'unlock_score': 0,
-    });
+    // 2. Create and Seed Levels 1-10
+    List<int> levelIds = [];
+    
+    // Define difficulty parameters for 10 levels
+    for (int i = 1; i <= 10; i++) {
+      final levelId = await db.insert('level', {
+        'game_id': gameId,
+        'min_value': 0,
+        'max_value': 10 * i,
+        'digit_count': (i <= 3) ? 1 : (i <= 7 ? 2 : 3),
+        'difficulty': i <= 3 ? 'EASY' : (i <= 6 ? 'NORMAL' : 'HARD'),
+        'unlock_score': (i - 1) * 500, // 0, 500, 1000, 1500...
+      });
+      levelIds.add(levelId);
 
-    // Level 2: 0-20 Addition
-    final level2Id = await db.insert('level', {
-      'game_id': gameId,
-      'min_value': 0,
-      'max_value': 20,
-      'digit_count': 2,
-      'difficulty': 'NORMAL',
-      'unlock_score': 50, // Needs 50 score to unlock
-    });
-
-    // Level 3: 0-20 Subtraction
-    final level3Id = await db.insert('level', {
-      'game_id': gameId,
-      'min_value': 0,
-      'max_value': 20,
-      'digit_count': 2,
-      'difficulty': 'NORMAL',
-      'unlock_score': 100,
-    });
-
-    // 3. Create Question Rules
-    // Rule for Level 1: Addition 0-10
-    await db.insert('question_rule', {
-      'level_id': level1Id,
-      'operation': '+',
-      'min_operand': 0,
-      'max_operand': 10,
-      'allow_negative': 0,
-    });
-
-    // Rule for Level 2: Addition 0-20
-    await db.insert('question_rule', {
-      'level_id': level2Id,
-      'operation': '+',
-      'min_operand': 0,
-      'max_operand': 20,
-      'allow_negative': 0,
-    });
-
-    // Rule for Level 3: Subtraction 0-20
-    await db.insert('question_rule', {
-      'level_id': level3Id,
-      'operation': '-',
-      'min_operand': 0,
-      'max_operand': 20,
-      'allow_negative': 0, // Result cannot be negative
-    });
+      // Add ALL 4 operations for EVERY level
+      // Addition
+      await db.insert('question_rule', {
+        'level_id': levelId,
+        'operation': '+',
+        'min_operand': 0,
+        'max_operand': 10 * i,
+        'allow_negative': 0,
+      });
+      // Subtraction
+      await db.insert('question_rule', {
+        'level_id': levelId,
+        'operation': '-',
+        'min_operand': 0,
+        'max_operand': 10 * i,
+        'allow_negative': 0,
+      });
+      // Multiplication
+      await db.insert('question_rule', {
+        'level_id': levelId,
+        'operation': '*',
+        'min_operand': 1,
+        'max_operand': min(2 + i, 12), // Scale from 1-3 up to 1-12
+        'allow_negative': 0,
+      });
+      // Division
+      await db.insert('question_rule', {
+        'level_id': levelId,
+        'operation': '/',
+        'min_operand': 1,
+        'max_operand': min(2 + i, 12),
+        'allow_negative': 0,
+      });
+    }
 
     // Parent Settings Default
     await db.insert('parent_settings', {

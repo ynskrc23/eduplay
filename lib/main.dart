@@ -3,11 +3,18 @@ import 'package:flutter/services.dart';
 import 'data/repositories/child_repository.dart';
 import 'features/child_profile/screens/create_profile_screen.dart';
 import 'features/game/screens/game_page.dart';
+import 'features/game/screens/level_map_screen.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'data/database/database_helper.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // UNCOMMENT the line below and run once to RESET the database
+  // await DatabaseHelper.instance.resetDatabase();
+
   await initializeDateFormatting('tr_TR', null);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -54,33 +61,37 @@ class _BootScreenState extends State<BootScreen> {
   Future<void> _checkProfileStatus() async {
     // Add artificial delay for splash effect and DB init
     await Future.delayed(const Duration(seconds: 1));
-    
+
     final repository = ChildRepository();
-    
+
     // For development: Uncomment the following line once to reset DB and apply schema changes
-    // await repository.deleteDatabaseForDev();    
+    // await repository.deleteDatabaseForDev();
     try {
       final profiles = await repository.getAllProfiles();
 
       if (mounted) {
         if (profiles.isNotEmpty) {
-          // Profile exists -> Go to Game with the most recent profile
+          // Profile exists -> Go to Level Map
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => GamePage(childId: profiles.first.id!)),
+            MaterialPageRoute(
+              builder: (context) => LevelMapScreen(childId: profiles.first.id!),
+            ),
           );
         } else {
           // No profile -> Go to Create Profile
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const CreateProfileScreen()),
+            MaterialPageRoute(
+              builder: (context) => const CreateProfileScreen(),
+            ),
           );
         }
       }
     } catch (e) {
       // Fallback
       if (mounted) {
-         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const CreateProfileScreen()),
-          );
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const CreateProfileScreen()),
+        );
       }
     }
   }
@@ -93,13 +104,17 @@ class _BootScreenState extends State<BootScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-             Container(
+            Container(
               padding: const EdgeInsets.all(24),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.school_rounded, size: 80, color: Colors.indigo),
+              child: const Icon(
+                Icons.school_rounded,
+                size: 80,
+                color: Colors.indigo,
+              ),
             ),
             const SizedBox(height: 24),
             const Text(
