@@ -4,6 +4,7 @@ import 'data/repositories/child_repository.dart';
 import 'features/child_profile/screens/create_profile_screen.dart';
 import 'features/game/screens/game_page.dart';
 import 'features/game/screens/level_map_screen.dart';
+import 'features/game/screens/game_hub_screen.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -74,7 +75,7 @@ class _BootScreenState extends State<BootScreen> {
           // Profile exists -> Go to Level Map
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => LevelMapScreen(childId: profiles.first.id!),
+              builder: (context) => GameHubScreen(childId: profiles.first.id!),
             ),
           );
         } else {

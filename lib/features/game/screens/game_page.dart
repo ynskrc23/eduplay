@@ -16,6 +16,9 @@ import '../services/question_generator.dart';
 import '../../parent_panel/screens/parent_panel_screen.dart';
 import '../../../core/services/sound_service.dart';
 import '../services/gamification_service.dart';
+import '../../../core/app_colors.dart';
+import '../../../core/widgets/duo_button.dart';
+import '../../../core/widgets/duo_progress_bar.dart';
 
 class GamePage extends StatefulWidget {
   final int childId;
@@ -75,7 +78,7 @@ class _GamePageState extends State<GamePage> {
     super.initState();
     _confettiController = ConfettiController(duration: const Duration(seconds: 1));
     _loadGameData();
-    SoundService.instance.startBgMusic();
+    // SoundService.instance.startBgMusic(); // Disabled missing asset
   }
 
   Future<void> _loadGameData() async {
@@ -323,67 +326,37 @@ class _GamePageState extends State<GamePage> {
         alignment: Alignment.topCenter,
         children: [
           Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.indigo.shade900,
-                  Colors.deepPurple.shade700,
-                  Colors.purple.shade500,
-                ],
-              ),
-            ),
+            color: AppColors.background,
             child: SafeArea(
               child: Column(
                 children: [
-                  // Simplified Header Bar
+                  // Header Bar
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Child Info
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor: Colors.white,
-                              child: Text(
-                                _childProfile?.avatarId ?? '👤',
-                                style: const TextStyle(fontSize: 20),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _childProfile?.name ?? 'Oyuncu',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                  'Puan: ${_childProfile?.totalScore ?? 0}',
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                        IconButton(
+                          onPressed: _exitGame,
+                          icon: const Icon(Icons.close, color: AppColors.gray, size: 28),
                         ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: DuoProgressBar(
+                            value: _correctCount / min(5 + (_currentLevelIndex * 2), 15),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
                         Row(
                           children: [
-                            IconButton(
-                              onPressed: _exitGame,
-                              icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
-                              tooltip: 'Çıkış',
+                            const Icon(Icons.favorite, color: AppColors.red, size: 24),
+                            const SizedBox(width: 4),
+                            Text(
+                              '5',
+                              style: TextStyle(
+                                color: AppColors.redShadow,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 18,
+                              ),
                             ),
                           ],
                         ),
@@ -392,10 +365,10 @@ class _GamePageState extends State<GamePage> {
                   ),
 
                   Expanded(
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height - 100,
                         child: _buildContent(),
                       ),
                     ),
@@ -448,208 +421,167 @@ class _GamePageState extends State<GamePage> {
   }
 
   Widget _buildWelcomeCard() {
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.school_rounded, size: 80, color: Colors.indigo),
-            const SizedBox(height: 24),
-            Text(
-              _childProfile != null ? 'Merhaba, ${_childProfile!.name}!' : (_game?.name ?? 'Hoşgeldin!'),
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.indigo.shade900,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Eğlenerek öğrenmeye hazır mısın?\nHer 5 doğru cevapta yeni bir macera seni bekliyor! 🚀',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, color: Colors.black54, height: 1.5),
-            ),
-            const SizedBox(height: 48),
-            FilledButton.icon(
-              onPressed: _startGame,
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              icon: const Icon(Icons.play_arrow_rounded),
-              label: const Text('Oyuna Başla'),
-            ),
-          ],
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.lightGray, width: 4),
+          ),
+          child: Text(
+            _childProfile?.avatarId ?? '🦊',
+            style: const TextStyle(fontSize: 80),
+          ),
         ),
-      ),
+        const SizedBox(height: 32),
+        Text(
+          _childProfile != null ? 'HAZIR MISIN, ${_childProfile!.name.toUpperCase()}?' : 'HAZIR MISIN?',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w900,
+            color: AppColors.textMain,
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'Yeni bir macera seni bekliyor!\nMatematik canavarlarını yenelim mi?',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18, color: AppColors.gray, height: 1.5, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 48),
+        DuoButton(
+          color: AppColors.blue,
+          shadowColor: AppColors.blueShadow,
+          onPressed: _startGame,
+          child: const Text(
+            'BAŞLAYALIM!',
+            style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 20),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildGameCard() {
     int target = min(5 + (_currentLevelIndex * 2), 15);
-    double progress = _correctCount / target;
-
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Progress Bar (Reduced Padding)
-          Padding(
-            padding: const EdgeInsets.only(left: 32, right: 32, top: 8),
-            child: Column(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 12,
-                    backgroundColor: Colors.white24,
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.greenAccent),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Hedef: $_correctCount / $target',
-                  style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-          
-          const SizedBox(height: 20),
-
-          // Combo Meter
-          if (_comboCount > 1)
-            TweenAnimationBuilder(
-              tween: Tween<double>(begin: 0.8, end: 1.2),
-              duration: const Duration(milliseconds: 200),
-              builder: (context, value, child) {
-                return Transform.scale(
-                  scale: value,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.5), blurRadius: 10)],
-                    ),
-                    child: Text(
-                      '🔥 $_comboCount KOMBO! 🔥',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
-                    ),
-                  ),
-                );
-              },
-            ),
-          
-          const SizedBox(height: 20),
-          
-          Card(
-            elevation: 12,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            child: Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Column(
-                children: [
-                  Text(
-                    'Soru (Seviye ${_currentLevelIndex + 1})',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '$_num1 $_operator $_num2 = ?',
-                    style: TextStyle(
-                      fontSize: 44,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.indigo.shade900,
-                      shadows: [
-                        Shadow(color: Colors.indigo.withOpacity(0.2), offset: const Offset(2, 2), blurRadius: 4),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  TextField(
-                    controller: _inputController,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.indigo),
-                    decoration: InputDecoration(
-                      hintText: '?',
-                      filled: true,
-                      fillColor: Colors.indigo.withOpacity(0.05),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    onSubmitted: (_) => _checkAnswer(),
-                  ),
-                  const SizedBox(height: 24),
-                  if (_feedbackMessage.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: TweenAnimationBuilder(
-                        tween: Tween<double>(begin: 0, end: 1),
-                        duration: const Duration(milliseconds: 300),
-                        builder: (context, value, child) {
-                          return Opacity(
-                            opacity: value,
-                            child: Transform.translate(
-                              offset: Offset(0, 10 * (1 - value)),
-                              child: Text(
-                                _feedbackMessage,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                  color: _feedbackMessage.startsWith('Doğru') || _feedbackMessage.contains('! ')
-                                      ? Colors.green.shade600
-                                      : Colors.red.shade600,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(color: Colors.indigo.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6)),
-                        ],
-                      ),
-                      child: FilledButton(
-                        onPressed: _checkAnswer,
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          backgroundColor: Colors.indigo,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                        child: const Text('Yanıtla', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ),
-                ],
+    
+    return Column(
+      children: [
+        const SizedBox(height: 32),
+        // Mascot and Speech Bubble
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.lightGray, width: 2),
+              ),
+              child: Text(
+                _childProfile?.avatarId ?? '🦊',
+                style: const TextStyle(fontSize: 48),
               ),
             ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                  border: Border.all(color: AppColors.lightGray, width: 2),
+                ),
+                child: Text(
+                  'Bu işlemi yapabilir misin?',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textMain,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        
+        const Spacer(),
+
+        // Question Display
+        Text(
+          '$_num1 $_operator $_num2',
+          style: const TextStyle(
+            fontSize: 64,
+            fontWeight: FontWeight.w900,
+            color: AppColors.textMain,
           ),
-        ],
-      ),
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Answer Input Box (Using standard TextField for "yazma olsun")
+        Container(
+          width: 200,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: AppColors.lightGray.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(16),
+            border: const Border(
+              bottom: BorderSide(color: AppColors.lightGray, width: 4),
+            ),
+          ),
+          child: TextField(
+            controller: _inputController,
+            keyboardType: TextInputType.number,
+            autofocus: true,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 48,
+              fontWeight: FontWeight.w900,
+              color: AppColors.blueShadow,
+            ),
+            decoration: const InputDecoration(
+              hintText: '?',
+              border: InputBorder.none,
+            ),
+            onChanged: (val) {
+              // Auto-check when correct
+              if (val == _answer.toString()) {
+                _checkAnswer();
+              }
+            },
+            onSubmitted: (_) => _checkAnswer(),
+          ),
+        ),
+
+        const SizedBox(height: 32),
+        
+        if (_feedbackMessage.isNotEmpty)
+          Text(
+            _feedbackMessage,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: _feedbackMessage.startsWith('Doğru') || _feedbackMessage.contains('! ')
+                  ? AppColors.green
+                  : AppColors.red,
+            ),
+          ),
+
+        const Spacer(),
+      ],
     );
   }
+
 
   Widget _buildScoreChip(String label, int current, int max, Color color) {
     return Container(
@@ -681,80 +613,72 @@ class _GamePageState extends State<GamePage> {
   }
 
   Widget _buildLevelUpCard() {
-  final nextLevel = _currentLevelIndex;
-  final unlockScoreNeeded = _levels[nextLevel].unlockScore;
+    final nextLevel = _currentLevelIndex;
+    final unlockScoreNeeded = _levels[nextLevel].unlockScore;
 
-  return Card(
-    elevation: 8,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-    child: Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _isNextLevelUnlocked ? Icons.stars_rounded : Icons.info_outline_rounded, 
-            size: 64, 
-            color: _isNextLevelUnlocked ? Colors.amber : Colors.blue
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          'BÖLÜM BİTTİ!',
+          style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.yellowShadow),
+        ),
+        const SizedBox(height: 24),
+        Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.lightGray, width: 4),
           ),
-          const SizedBox(height: 16),
-          Text(
-            _isNextLevelUnlocked ? 'Harika İş! 🌟' : 'Bölüm Tamam! 🚩',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.indigo),
-          ),
-          const SizedBox(height: 24),
-          
-          // Simplified Bonus Row (Transparent/Clean)
-          if (_lastComboBonus > 0 || _lastLevelGift > 0)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (_lastComboBonus > 0)
-                    _buildBonusBadge('🔥 $_lastComboBonus Kombo'),
-                  if (_lastComboBonus > 0 && _lastLevelGift > 0)
-                    const SizedBox(width: 12),
-                  if (_lastLevelGift > 0)
-                    _buildBonusBadge('🎁 $_lastLevelGift Hediye'),
-                ],
-              ),
-            ),
-
-          Text(
-            _isNextLevelUnlocked 
-                ? 'Seviye ${nextLevel + 1} Sizi Bekliyor!'
-                : 'Sonraki Seviye İçin $unlockScoreNeeded Puan Lazım.',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: Colors.grey.shade700, fontWeight: FontWeight.w600),
-          ),
-          
-          const SizedBox(height: 32),
-          
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Column(
             children: [
-              TextButton(
-                onPressed: _exitGame,
-                child: const Text('Anasayfa', style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-              const SizedBox(width: 12),
-              FilledButton(
-                onPressed: _startGame,
-                style: FilledButton.styleFrom(
-                  backgroundColor: _isNextLevelUnlocked ? Colors.green : Colors.indigo,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              const Icon(Icons.stars_rounded, size: 100, color: AppColors.yellow),
+              const SizedBox(height: 24),
+              if (_lastComboBonus > 0 || _lastLevelGift > 0)
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    if (_lastComboBonus > 0)
+                      _buildBonusBadge('🔥 $_lastComboBonus KOMBO BONUSU'),
+                    if (_lastLevelGift > 0)
+                      _buildBonusBadge('🎁 $_lastLevelGift SEVİYE HEDİYESİ'),
+                  ],
                 ),
-                child: Text(_isNextLevelUnlocked ? 'Devam Et 🚀' : 'Tekrar Oyna 🔄'),
+              const SizedBox(height: 24),
+              Text(
+                _isNextLevelUnlocked 
+                    ? 'Yeni bir seviye açıldı!' 
+                    : 'Sonraki seviye için $unlockScoreNeeded puana ulaşman gerekiyor.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18, color: AppColors.textMain, fontWeight: FontWeight.bold),
               ),
             ],
           ),
-        ],
-      ),
-    ),
-  );
-}
+        ),
+        const SizedBox(height: 48),
+        DuoButton(
+          color: AppColors.green,
+          shadowColor: AppColors.greenShadow,
+          onPressed: _isNextLevelUnlocked ? _startGame : _exitGame,
+          child: Text(
+            _isNextLevelUnlocked ? 'DEVAM ET' : 'HARİTAYA DÖN',
+            style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18),
+          ),
+        ),
+        if (_isNextLevelUnlocked)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: TextButton(
+              onPressed: _exitGame,
+              child: const Text('ŞİMDİLİK BU KADAR', style: TextStyle(color: AppColors.gray, fontWeight: FontWeight.bold)),
+            ),
+          ),
+      ],
+    );
+  }
 
 Widget _buildBonusBadge(String text) {
   return Container(
@@ -776,57 +700,50 @@ Widget _buildBonusBadge(String text) {
     required IconData icon,
     required Color color,
   }) {
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: Padding(
-        padding: const EdgeInsets.all(40.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 64, color: color),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, color: Colors.black87),
-            ),
-            const SizedBox(height: 48),
-            FilledButton.icon(
-              onPressed: () {
-                if (title == 'Tebrikler!') {
-                  // If won and more levels exist, go to next level or map
-                  _exitGame();
-                } else {
-                  _startGame();
-                }
-              },
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                backgroundColor: color,
-                foregroundColor: Colors.white,
-              ),
-              icon: Icon(title == 'Tebrikler!' ? Icons.arrow_forward_rounded : Icons.refresh_rounded),
-              label: Text(title == 'Tebrikler!' ? 'Devam Et' : 'Tekrar Oyna'),
-            ),
-          ],
+    bool isWin = title == 'Tebrikler!';
+    
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          title.toUpperCase(),
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
+            color: isWin ? AppColors.yellowShadow : AppColors.redShadow,
+          ),
         ),
-      ),
+        const SizedBox(height: 32),
+        Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppColors.lightGray, width: 4),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, size: 100, color: isWin ? AppColors.yellow : AppColors.red),
+              const SizedBox(height: 24),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 18, color: AppColors.textMain, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 48),
+        DuoButton(
+          color: isWin ? AppColors.green : AppColors.blue,
+          shadowColor: isWin ? AppColors.greenShadow : AppColors.blueShadow,
+          onPressed: isWin ? _exitGame : _startGame,
+          child: Text(
+            isWin ? 'DEVAM ET' : 'TEKRAR DENE',
+            style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18),
+          ),
+        ),
+      ],
     );
   }
 

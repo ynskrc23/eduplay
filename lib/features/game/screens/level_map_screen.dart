@@ -4,6 +4,8 @@ import '../../../data/models/child_profile.dart';
 import '../../../data/models/level.dart';
 import '../../../data/repositories/game_repository.dart';
 import '../../../data/repositories/child_repository.dart';
+import '../../../core/app_colors.dart';
+import '../../../core/widgets/duo_button.dart';
 import 'game_page.dart';
 import '../../parent_panel/screens/parent_panel_screen.dart';
 
@@ -91,29 +93,28 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Stack(
               children: [
-                // Background Gradient
+                // Vibrant Background
                 Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.blue.shade300,
-                        Colors.green.shade200,
+                        AppColors.purpleLight,
+                        AppColors.purpleDark,
                       ],
                     ),
                   ),
                 ),
                 
-                // Achievement Path
-                _buildMapPath(),
-
-                // Top Profile Header
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: _buildHeader(),
+                // Main Layout
+                Column(
+                  children: [
+                    _buildHeader(),
+                    Expanded(
+                      child: _buildMapPath(),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -122,22 +123,30 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
 
   Widget _buildHeader() {
     return Container(
-      margin: const EdgeInsets.only(top: 12, left: 16, right: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.only(top: 48, left: 16, right: 16, bottom: 8),
+      padding: const EdgeInsets.only(left: 8, right: 16, top: 12, bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(24),
+        color: AppColors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: Colors.white.withOpacity(0.6)),
       ),
       child: Row(
         children: [
+          // Back Button
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.purpleDark),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const SizedBox(width: 8),
           // Avatar
           Container(
             padding: const EdgeInsets.all(2),
@@ -163,7 +172,7 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: Colors.indigo,
+                    color: AppColors.purpleDark,
                     letterSpacing: -0.5,
                   ),
                 ),
@@ -259,7 +268,7 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
 
   Widget _buildMapPath() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 150, bottom: 50),
+      padding: const EdgeInsets.only(top: 20, bottom: 50),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
@@ -270,7 +279,7 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
               final isCurrent = index == _childProfile?.currentLevel;
               
               // Zig-zag alignment
-              double padding = (index % 2 == 0) ? 60.0 : -60.0;
+              double padding = (index % 4 == 0) ? 0 : (index % 4 == 1 ? 80.0 : (index % 4 == 2 ? 0 : -80.0));
 
               return Padding(
                 padding: EdgeInsets.only(left: padding > 0 ? padding : 0, right: padding < 0 ? -padding : 0, bottom: 40),
@@ -284,50 +293,51 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
   }
 
   Widget _buildLevelNode(Level level, int index, bool isLocked, bool isCurrent) {
-    return GestureDetector(
-      onTap: isLocked ? null : () => _startLevel(index),
-      child: Column(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: isLocked ? Colors.grey.shade400 : (isCurrent ? Colors.amber : Colors.indigo),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-              border: isCurrent ? Border.all(color: Colors.white, width: 4) : null,
-            ),
-            child: Icon(
-              isLocked ? Icons.lock : Icons.play_arrow,
-              color: Colors.white,
-              size: 40,
-            ),
+    Color nodeColor = isLocked ? AppColors.white.withOpacity(0.3) : (isCurrent ? AppColors.yellow : AppColors.blue);
+    Color shadowColor = isLocked ? Colors.black.withOpacity(0.1) : (isCurrent ? AppColors.yellowShadow : AppColors.blueShadow);
+    
+    return Column(
+      children: [
+        DuoButton(
+          width: 80,
+          height: 80,
+          color: nodeColor,
+          shadowColor: shadowColor,
+          onPressed: isLocked ? null : () => _startLevel(index),
+          child: Icon(
+            isLocked ? Icons.lock : (isCurrent ? Icons.star : Icons.play_arrow),
+            color: AppColors.white,
+            size: 40,
           ),
+        ),
+        if (!isLocked) ...[
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(10),
+              color: AppColors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withOpacity(0.3)),
             ),
             child: Text(
-              'Seviye ${index + 1}',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              'SEVİYE ${index + 1}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 12,
+              ),
             ),
           ),
-          if (isLocked)
-            Text(
-              '${level.unlockScore} Puan Gerekli',
-              style: TextStyle(color: Colors.red.shade700, fontSize: 12, fontWeight: FontWeight.bold),
-            ),
         ],
-      ),
+        if (isLocked)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              '${level.unlockScore} PUAN',
+              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 10, fontWeight: FontWeight.w900),
+            ),
+          ),
+      ],
     );
   }
 
