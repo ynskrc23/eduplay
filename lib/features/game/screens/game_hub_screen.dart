@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'level_map_screen.dart';
 import 'number_ordering_game.dart';
 import 'balloon_pop_game.dart';
+import 'game_page_enhanced.dart';
+import 'game_page_modern.dart';
 import '../../../core/app_colors.dart';
 import '../../../core/widgets/duo_button.dart';
 import '../../../data/models/child_profile.dart';
@@ -74,7 +76,7 @@ class _GameHubScreenState extends State<GameHubScreen> {
                       const SizedBox(height: 32),
                       _buildGameCard(
                         title: 'MATEMATİK YARIŞI',
-                        subtitle: 'Hızlı sorularla kendini dene!',
+                        subtitle: 'Seviyeleri tamamla, matematik öğren!',
                         icon: '🚀',
                         color: AppColors.green,
                         shadow: AppColors.greenShadow,
@@ -96,6 +98,20 @@ class _GameHubScreenState extends State<GameHubScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => NumberOrderingGame(childId: widget.childId)),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      _buildGameCard(
+                        title: 'MATEMATİK SAVAŞI',
+                        subtitle: 'Canavarları yen, matematik ustası ol!',
+                        icon: '👾',
+                        color: const Color(0xFF9C27B0),
+                        shadow: const Color(0xFF6A1B9A),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => GamePageEnhanced(childId: widget.childId)),
                           );
                         },
                       ),
@@ -132,9 +148,23 @@ class _GameHubScreenState extends State<GameHubScreen> {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Text(_childProfile?.avatarId ?? '🦊'),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  _childProfile?.avatarId ?? '🦊',
+                  style: const TextStyle(fontSize: 24),
+                ),
               ),
               const SizedBox(width: 12),
               Text(

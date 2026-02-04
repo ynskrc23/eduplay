@@ -351,11 +351,11 @@ class _GamePageState extends State<GamePage> {
                             const Icon(Icons.favorite, color: AppColors.red, size: 24),
                             const SizedBox(width: 4),
                             Text(
-                              '5',
+                              '∞',
                               style: TextStyle(
                                 color: AppColors.redShadow,
                                 fontWeight: FontWeight.w900,
-                                fontSize: 18,
+                                fontSize: 24,
                               ),
                             ),
                           ],

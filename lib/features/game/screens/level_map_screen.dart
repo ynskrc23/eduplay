@@ -6,7 +6,7 @@ import '../../../data/repositories/game_repository.dart';
 import '../../../data/repositories/child_repository.dart';
 import '../../../core/app_colors.dart';
 import '../../../core/widgets/duo_button.dart';
-import 'game_page.dart';
+import 'game_page_modern.dart';
 import '../../parent_panel/screens/parent_panel_screen.dart';
 
 class LevelMapScreen extends StatefulWidget {
@@ -343,7 +343,7 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
 
   void _startLevel(int levelIndex) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => GamePage(childId: widget.childId, initialLevelIndex: levelIndex)),
+      MaterialPageRoute(builder: (context) => GamePageModern(childId: widget.childId, initialLevelIndex: levelIndex)),
     ).then((_) => _loadData()); // Reload data when returning
   }
 }
