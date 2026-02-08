@@ -5,7 +5,7 @@ import 'balloon_pop_game.dart';
 import 'game_page_enhanced.dart';
 import 'game_page_modern.dart';
 import '../../../core/app_colors.dart';
-import '../../../core/widgets/duo_button.dart';
+import '../../../core/widgets/neumorphic_game_button.dart';
 import '../../../data/models/child_profile.dart';
 import '../../../data/repositories/child_repository.dart';
 
@@ -41,18 +41,12 @@ class _GameHubScreenState extends State<GameHubScreen> {
     if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     return Scaffold(
+      backgroundColor: AppColors.cloudBlue, // New Design Background
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.purpleLight,
-              AppColors.purpleDark,
-            ],
-          ),
+          color: AppColors.cloudBlue,
         ),
         child: SafeArea(
           child: Column(
@@ -63,23 +57,29 @@ class _GameHubScreenState extends State<GameHubScreen> {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      const Text(
-                        'EĞLENEREK\nMATEMATİK ÖĞREN!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.2,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: Text(
+                          'EĞLENEREK\nMATEMATİK ÖĞREN!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                            shadows: [
+                              Shadow(color: Colors.black.withOpacity(0.2), offset: const Offset(2, 2), blurRadius: 4),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 10),
                       _buildGameCard(
                         title: 'MATEMATİK YARIŞI',
-                        subtitle: 'Seviyeleri tamamla, matematik öğren!',
+                        subtitle: 'Seviyeleri tamamla!',
                         icon: '🚀',
-                        color: AppColors.green,
-                        shadow: AppColors.greenShadow,
+                        color: AppColors.leafGreen,
+                        shadow: AppColors.leafGreenShadow,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -92,8 +92,8 @@ class _GameHubScreenState extends State<GameHubScreen> {
                         title: 'SAYI SIRALAMA',
                         subtitle: 'Küçükten büyüğe sırala!',
                         icon: '🔢',
-                        color: AppColors.blue,
-                        shadow: AppColors.blueShadow,
+                        color: AppColors.oceanBlue,
+                        shadow: AppColors.oceanBlueShadow,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -104,10 +104,10 @@ class _GameHubScreenState extends State<GameHubScreen> {
                       const SizedBox(height: 20),
                       _buildGameCard(
                         title: 'MATEMATİK SAVAŞI',
-                        subtitle: 'Canavarları yen, matematik ustası ol!',
+                        subtitle: 'Canavarları yen!',
                         icon: '👾',
-                        color: const Color(0xFF9C27B0),
-                        shadow: const Color(0xFF6A1B9A),
+                        color: AppColors.violetMain,
+                        shadow: AppColors.purpleDark,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -118,10 +118,11 @@ class _GameHubScreenState extends State<GameHubScreen> {
                       const SizedBox(height: 20),
                       _buildGameCard(
                         title: 'BALON PATLAT',
-                        subtitle: 'Doğru sonucu bul ve patlat!',
+                        subtitle: 'Doğru sonucu bul!',
                         icon: '🎈',
-                        color: AppColors.orange,
-                        shadow: AppColors.orangeShadow,
+                        color: AppColors.sunYellow,
+                        shadow: AppColors.sunYellowShadow,
+                        textColor: AppColors.darkText, // Yellow bg needs dark text
                         onTap: () {
                           Navigator.push(
                             context,
@@ -157,36 +158,62 @@ class _GameHubScreenState extends State<GameHubScreen> {
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
                       blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
                 child: Text(
                   _childProfile?.avatarId ?? '🦊',
-                  style: const TextStyle(fontSize: 24),
+                  style: const TextStyle(fontSize: 28),
                 ),
               ),
               const SizedBox(width: 12),
-              Text(
-                _childProfile?.name ?? '',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _childProfile?.name ?? '',
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontWeight: FontWeight.w900, 
+                      fontSize: 20,
+                      shadows: [
+                        Shadow(color: Colors.black12, offset: Offset(1, 1), blurRadius: 2),
+                      ],
+                    ),
+                  ),
+                  const Text(
+                    'Öğrenci',
+                    style: TextStyle(
+                      color: Colors.white70, 
+                      fontSize: 14, 
+                      fontWeight: FontWeight.bold
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.gold.withOpacity(0.3),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.gold, width: 2),
+              boxShadow: [
+                 BoxShadow(color: Colors.black.withOpacity(0.1), offset: const Offset(0, 4), blurRadius: 4),
+              ],
             ),
             child: Row(
               children: [
-                const Icon(Icons.stars_rounded, color: AppColors.gold, size: 20),
-                const SizedBox(width: 4),
+                const Icon(Icons.stars_rounded, color: AppColors.gold, size: 24),
+                const SizedBox(width: 8),
                 Text(
                   '${_childProfile?.totalScore ?? 0}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                    color: AppColors.darkText, 
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -203,22 +230,30 @@ class _GameHubScreenState extends State<GameHubScreen> {
     required Color color,
     required Color shadow,
     required VoidCallback onTap,
+    Color textColor = Colors.white,
   }) {
-    return DuoButton(
-      height: 120,
-      color: AppColors.white,
-      shadowColor: AppColors.lightGray,
+    return NeumorphicGameButton(
+      height: 100,
+      width: double.infinity,
+      color: Colors.white, // Main card background white
+      shadowColor: Colors.blueGrey.shade100, // Card shadow
       onPressed: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      borderRadius: 24,
       child: Row(
         children: [
-          const SizedBox(width: 20),
+          // Icon Box
           Container(
-            padding: const EdgeInsets.all(12),
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color,
               borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(color: shadow, offset: const Offset(0, 4), blurRadius: 0),
+              ],
             ),
-            child: Text(icon, style: const TextStyle(fontSize: 40)),
+            child: Center(child: Text(icon, style: const TextStyle(fontSize: 32))),
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -231,7 +266,7 @@ class _GameHubScreenState extends State<GameHubScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: AppColors.textMain,
+                    color: AppColors.darkText,
                   ),
                 ),
                 Text(
@@ -245,8 +280,15 @@ class _GameHubScreenState extends State<GameHubScreen> {
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, color: AppColors.lightGray),
-          const SizedBox(width: 20),
+          NeumorphicGameButton( // Mini button for arrow
+            width: 40,
+            height: 40,
+            color: color,
+            shadowColor: shadow,
+            borderRadius: 12,
+            onPressed: null, // Just visual
+            child: Icon(Icons.arrow_forward_rounded, color: textColor, size: 24),
+          ),
         ],
       ),
     );

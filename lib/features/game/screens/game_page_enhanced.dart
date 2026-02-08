@@ -13,12 +13,10 @@ import '../../../data/repositories/game_session_repository.dart';
 import '../../../data/models/child_profile.dart';
 import '../../../data/models/game_session.dart';
 import '../services/question_generator.dart';
-import '../../parent_panel/screens/parent_panel_screen.dart';
 import '../../../core/services/sound_service.dart';
-import '../services/gamification_service.dart';
 import '../../../core/app_colors.dart';
 import '../../../core/widgets/duo_button.dart';
-import '../../../core/widgets/duo_progress_bar.dart';
+import '../../../core/widgets/neumorphic_game_button.dart';
 
 class GamePageEnhanced extends StatefulWidget {
   final int childId;
@@ -33,9 +31,6 @@ enum GameStatus { welcome, playing, won, levelUp, lost }
 
 class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProviderStateMixin {
   GameStatus _status = GameStatus.welcome;
-  bool _isNextLevelUnlocked = false;
-  int _lastComboBonus = 0;
-  int _lastLevelGift = 0;
   
   // Game State Variables
   int _correctCount = 0;
@@ -48,7 +43,6 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
   bool _monsterHit = false;
   
   // Game Data
-  final GamificationService _gamification = GamificationService.instance;
   final GameRepository _gameRepo = GameRepository();
   final ChildRepository _childRepo = ChildRepository();
   final GameSessionRepository _sessionRepo = GameSessionRepository();
@@ -165,8 +159,8 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
       _comboCount = 0;
       _wrongCount = 0;
       _feedbackMessage = '';
-      _monsterHealth = 100;
-      _monsterMaxHealth = 100;
+      _monsterHealth = 150;
+      _monsterMaxHealth = 150;
       _currentMonster = _monsters[_random.nextInt(_monsters.length)];
       _generateQuestion();
     });
@@ -204,32 +198,22 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
         _correctCount++;
         _comboCount++;
         
-        // Hit the monster!
-        int damage = min(20 + (_comboCount * 2), 35);
+        // Hit the monster! (Adjusted for more questions, ~8-10 correct answers)
+        int damage = min(12 + (_comboCount * 1), 25);
         _monsterHealth = max(0, _monsterHealth - damage);
         _monsterHit = true;
         
-        int earnedPoints = 10;
-        _feedbackMessage = _gamification.getFeedbackMessage(true, _comboCount);
+        // _feedbackMessage set edilmiyor, böylece ekranda "Doğru!" yazısı çıkmayacak
         
         _confettiController.play();
         _monsterController.forward().then((_) => _monsterController.reverse());
         SoundService.instance.playCorrect();
         
-        _childRepo.updateScore(widget.childId, earnedPoints);
-        
-        if (_childProfile != null) {
-          _childProfile = _childProfile!.copyWith(
-            totalScore: _childProfile!.totalScore + earnedPoints,
-          );
-        }
-
         Future.delayed(const Duration(milliseconds: 300), () {
           if (mounted) setState(() => _monsterHit = false);
         });
 
-        int target = min(5 + (_currentLevelIndex * 2), 15);
-        if (_correctCount >= target) {
+        if (_monsterHealth <= 0) {
           _advanceLevel();
         } else {
           Future.delayed(const Duration(milliseconds: 800), () {
@@ -239,9 +223,19 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
       } else {
         _wrongCount++;
         _comboCount = 0;
-        _feedbackMessage = _gamification.getFeedbackMessage(false, 0);
+        _feedbackMessage = "Cevap bu değil, tekrar dene! 💪";
         _shakeController.forward().then((_) => _shakeController.reverse());
         SoundService.instance.playWrong();
+        
+        // Hatalı cevapta mesajı bir süre sonra temizle
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          if (mounted) {
+            setState(() {
+              _feedbackMessage = '';
+              _inputController.clear();
+            });
+          }
+        });
       }
     });
   }
@@ -257,38 +251,17 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
       _currentSessionId = null;
     }
 
-    int comboBonus = 0;
-    int levelGift = 0;
 
     if (_currentLevelIndex + 1 < _levels.length) {
-      if (_comboCount > 0) {
-        comboBonus = _comboCount;
-        await _childRepo.updateScore(widget.childId, comboBonus);
-      }
-
       _currentLevelIndex++;
     
       await _childRepo.updateLevel(widget.childId, _currentLevelIndex);
 
       var updatedProfile = await _childRepo.getProfileById(widget.childId);
       
-      bool unlocked = false;
-      if (_currentLevelIndex < _levels.length) {
-        final nextLevel = _levels[_currentLevelIndex];
-        if ((updatedProfile?.totalScore ?? 0) >= nextLevel.unlockScore) {
-          unlocked = true;
-          levelGift = 10;
-          await _childRepo.updateScore(widget.childId, levelGift);
-          updatedProfile = await _childRepo.getProfileById(widget.childId);
-        }
-      }
-
       if (mounted) {
         setState(() {
           _childProfile = updatedProfile;
-          _isNextLevelUnlocked = unlocked;
-          _lastComboBonus = comboBonus;
-          _lastLevelGift = levelGift;
           _status = GameStatus.levelUp;
           _isLoading = false; 
           _feedbackMessage = ''; 
@@ -332,54 +305,80 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator()) 
         : Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFF667eea),
-                const Color(0xFF764ba2),
-                const Color(0xFFf093fb),
-              ],
-            ),
-          ),
+          color: AppColors.cloudBlue,
           child: SafeArea(
             child: Stack(
               alignment: Alignment.topCenter,
               children: [
                 Column(
                   children: [
-                    // Header Bar
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    // Header Bar (Simplified like Number Ordering)
+                    Container(
+                      padding: const EdgeInsets.all(16),
                       child: Row(
                         children: [
-                          IconButton(
-                            onPressed: _exitGame,
-                            icon: const Icon(Icons.close, color: Colors.white, size: 28),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: DuoProgressBar(
-                              value: _correctCount / min(5 + (_currentLevelIndex * 2), 15),
+                          // Back Button
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.blueGrey.shade200,
+                                  offset: const Offset(0, 4),
+                                  blurRadius: 0,
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: _exitGame,
+                              icon: const Icon(Icons.arrow_back_rounded, color: AppColors.cloudBlue, size: 28),
                             ),
                           ),
                           const SizedBox(width: 16),
-                          Row(
-                            children: [
-                              const Icon(Icons.favorite, color: Colors.red, size: 24),
-                              const SizedBox(width: 4),
-                              Text(
-                                '∞',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 24,
-                                ),
+                          // Title
+                          const Expanded(
+                            child: Text(
+                              'MATEMATİK SAVAŞI',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 24,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 1.0,
+                                shadows: [
+                                  Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
+                          const SizedBox(width: 16),
+                          const SizedBox(width: 48), // Balancing space
                         ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 10),
+                    
+                    // Monster Health Bar (Header Style)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox(
+                          height: 12,
+                          child: LinearProgressIndicator(
+                            value: _monsterHealth / _monsterMaxHealth,
+                            backgroundColor: Colors.white.withValues(alpha: 0.3),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              _monsterHealth > 50 ? AppColors.sunYellow : AppColors.orange,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
 
@@ -444,7 +443,7 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -544,54 +543,6 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
   Widget _buildMonsterSection() {
     return Column(
       children: [
-        // Monster Health Bar
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'CANAVAR',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 14,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                  Text(
-                    '$_monsterHealth / $_monsterMaxHealth',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: LinearProgressIndicator(
-                  value: _monsterHealth / _monsterMaxHealth,
-                  minHeight: 20,
-                  backgroundColor: Colors.red.shade900,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    _monsterHealth > 50 ? Colors.red : Colors.orange,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        
         // Monster Character
         AnimatedBuilder(
           animation: _monsterController,
@@ -601,16 +552,16 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
               child: Transform.rotate(
                 angle: _monsterController.value * 0.1,
                 child: Container(
-                  width: 150,
-                  height: 150,
+                  width: 200,
+                  height: 200,
                   decoration: BoxDecoration(
                     color: _monsterHit 
-                        ? Colors.red.withOpacity(0.3)
-                        : Colors.white.withOpacity(0.1),
+                        ? Colors.red.withValues(alpha: 0.3)
+                        : Colors.white.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: _monsterHit ? Colors.red : Colors.purple,
+                        color: _monsterHit ? Colors.red : AppColors.purpleDark.withValues(alpha: 0.5),
                         blurRadius: 30,
                         spreadRadius: 5,
                       ),
@@ -619,7 +570,7 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
                   child: Center(
                     child: Text(
                       _currentMonster,
-                      style: const TextStyle(fontSize: 100),
+                      style: const TextStyle(fontSize: 130),
                     ),
                   ),
                 ),
@@ -663,7 +614,7 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
           borderRadius: BorderRadius.circular(32),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -697,7 +648,7 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.blue.withOpacity(0.3),
+                    color: AppColors.blue.withValues(alpha: 0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -734,19 +685,16 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
   }
 
   Widget _buildLevelUpCard() {
-    final nextLevel = _currentLevelIndex;
-    final unlockScoreNeeded = _levels[nextLevel].unlockScore;
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text(
-            'CANAVAR YENİLDİ!',
+            'HARİKA!',
             style: TextStyle(
-              fontSize: 32, 
+              fontSize: 40, 
               fontWeight: FontWeight.w900, 
-              color: Colors.white,
+              color: AppColors.sunYellow,
               shadows: [
                 Shadow(
                   color: Colors.black26,
@@ -755,87 +703,34 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
                 ),
               ],
             ),
-          ).animate().fadeIn().slideY(begin: -0.3, end: 0),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
+          ).animate().fadeIn().scale(curve: Curves.elasticOut, duration: 600.ms),
+          const SizedBox(height: 16),
+          const Text(
+            'Canavarı yendin ve zafer kazandın!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
               color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
             ),
-            child: Column(
-              children: [
-                const Icon(Icons.stars_rounded, size: 100, color: Colors.amber),
-                const SizedBox(height: 24),
-                if (_lastComboBonus > 0 || _lastLevelGift > 0)
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    alignment: WrapAlignment.center,
-                    children: [
-                      if (_lastComboBonus > 0)
-                        _buildBonusBadge('🔥 $_lastComboBonus KOMBO BONUSU'),
-                      if (_lastLevelGift > 0)
-                        _buildBonusBadge('🎁 $_lastLevelGift SEVİYE HEDİYESİ'),
-                    ],
-                  ),
-                const SizedBox(height: 24),
-                Text(
-                  _isNextLevelUnlocked 
-                      ? 'Yeni bir seviye açıldı!' 
-                      : 'Sonraki seviye için $unlockScoreNeeded puana ulaşman gerekiyor.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18, color: AppColors.textMain, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ).animate().scale(delay: 200.ms, curve: Curves.elasticOut),
+          ).animate().fadeIn(delay: 200.ms),
           const SizedBox(height: 48),
-          DuoButton(
-            color: AppColors.green,
-            shadowColor: AppColors.greenShadow,
-            onPressed: _isNextLevelUnlocked ? _startGame : _exitGame,
-            child: Text(
-              _isNextLevelUnlocked ? 'SONRAKİ CANAVAR' : 'HARİTAYA DÖN',
-              style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18),
+          NeumorphicGameButton(
+            color: AppColors.orange,
+            shadowColor: AppColors.orangeShadow,
+            width: 200,
+            height: 60,
+            onPressed: _exitGame,
+            child: const Text(
+              'TAMAM',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20),
             ),
-          ),
-          if (_isNextLevelUnlocked)
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: TextButton(
-                onPressed: _exitGame,
-                child: const Text(
-                  'ŞİMDİLİK BU KADAR', 
-                  style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)
-                ),
-              ),
-            ),
+          ).animate().scale(delay: 400.ms, curve: Curves.elasticOut),
         ],
       ),
     );
   }
 
-Widget _buildBonusBadge(String text) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-    decoration: BoxDecoration(
-      color: Colors.orange,
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Text(
-      text,
-      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-    ),
-  );
-}
 
   Widget _buildResultCard({
     required String title,
@@ -872,7 +767,7 @@ Widget _buildBonusBadge(String text) {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),

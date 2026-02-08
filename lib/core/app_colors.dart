@@ -30,4 +30,19 @@ class AppColors {
   static const Color purpleDark = Color(0xFF7E22CE);
   static const Color violetMain = Color(0xFFA855F7);
   static const Color gold = Color(0xFFFFD700);
+
+  // New Design Palette (Neumorphic + Material 3)
+  static const Color cloudBlue = Color(0xFF4DB5F4); // Background
+  static const Color cloudBlueShadow = Color(0xFF2E94D6);
+  static const Color sunYellow = Color(0xFFFFD54F); // Buttons
+  static const Color sunYellowShadow = Color(0xFFFB8C00);
+  static const Color leafGreen = Color(0xFF66BB6A); // Check button
+  static const Color leafGreenShadow = Color(0xFF2E7D32);
+  static const Color berryRed = Color(0xFFEF5350);
+  static const Color berryRedShadow = Color(0xFFC62828);
+  static const Color oceanBlue = Color(0xFF42A5F5);
+  static const Color oceanBlueShadow = Color(0xFF1565C0);
+  
+  static const Color darkText = Color(0xFF2D3142);
+  static const Color lightText = Color(0xFFFFFFFF);
 }

@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import '../../../core/app_colors.dart';
-import '../../../core/widgets/duo_button.dart';
+import '../../../core/widgets/neumorphic_game_button.dart';
 import '../../../core/widgets/duo_progress_bar.dart';
 import '../../../core/services/sound_service.dart';
 
@@ -22,6 +22,7 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
   List<_BalloonData> _balloons = [];
   int _round = 1;
   final int _totalRounds = 5;
+  bool _isGameFinished = false;
 
   @override
   void initState() {
@@ -33,14 +34,23 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
   void _generateRound() {
     _targetNumber = _random.nextInt(15) + 1;
     Set<int> ops = {_targetNumber};
-    // Ensure 5 unique numbers
-    while(ops.length < 5) {
+    // 4 benzersiz sayı oluştur (Sayılar arası mesafeyi artırmak için balon sayısını azalttık)
+    while(ops.length < 4) {
       int nextVal = _random.nextInt(30) + 1;
       if (nextVal != _targetNumber) ops.add(nextVal);
     }
     
     List<int> numbers = ops.toList()..shuffle();
-    double segmentWidth = 0.8 / numbers.length;
+    double segmentWidth = 1.0 / numbers.length;
+    
+    List<Color> availableColors = [
+      AppColors.berryRed,
+      AppColors.oceanBlue,
+      AppColors.leafGreen,
+      AppColors.orange,
+      AppColors.violetMain,
+      AppColors.sunYellow,
+    ]..shuffle();
     
     setState(() {
       _balloons = numbers.asMap().entries.map((entry) {
@@ -48,16 +58,10 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
         int n = entry.value;
         return _BalloonData(
           number: n,
-          color: [
-            const Color(0xFFFF5252), // Red
-            const Color(0xFF448AFF), // Blue
-            const Color(0xFF4CAF50), // Green
-            const Color(0xFFFFAB40), // Orange
-            const Color(0xFFE040FB), // Purple
-          ][_random.nextInt(5)],
-          x: 0.1 + (idx * segmentWidth) + (segmentWidth * 0.2),
-          y: 1.2, // Same start for sync
-          speed: 0.005 + (_random.nextDouble() * 0.002), // Faster speed
+          color: availableColors[idx % availableColors.length],
+          x: (idx + 0.5) * segmentWidth, // Ekran geneline daha dengeli yayılım
+          y: 1.2, // Start from bottom
+          speed: 0.003 + (_random.nextDouble() * 0.0015), // Hız düşürüldü
         );
       }).toList();
     });
@@ -79,7 +83,6 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
       _nextRound();
     } else {
       SoundService.instance.playWrong();
-      // Only shake or give feedback, don't pop wrong balloons as requested: "sadece doğru olan balon patlasın"
     }
   }
 
@@ -94,13 +97,15 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
         }
       });
     } else {
-      setState(() {
-         _isGameFinished = true;
+       Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          setState(() {
+            _isGameFinished = true;
+          });
+        }
       });
     }
   }
-
-  bool _isGameFinished = false;
 
   void _showSuccessDialog() {
     showDialog(
@@ -111,7 +116,7 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
         title: const Text('HARİKA!', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.orange)),
         content: const Text('Tüm balonları uçurdun! 🎈', textAlign: TextAlign.center),
         actions: [
-          DuoButton(
+          NeumorphicGameButton(
             color: AppColors.orange,
             shadowColor: AppColors.orangeShadow,
             onPressed: () {
@@ -134,86 +139,99 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.lightBlue.shade50, // Sky background
+      backgroundColor: AppColors.cloudBlue, // New Background
       body: SafeArea(
         child: Stack(
           children: [
             // Floating Balloons
-            ..._balloons.map((b) => _buildAnimatedBalloon(b)),
+            ..._balloons.map((b) => _buildAnimatedBalloon(b)), 
 
             // UI Overlay
             Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Row(
                     children: [
-                      IconButton(
+                      NeumorphicGameButton(
+                        width: 48,
+                        height: 48,
+                        borderRadius: 12,
+                        color: Colors.white,
+                        shadowColor: Colors.blueGrey.shade200,
+                        padding: EdgeInsets.zero,
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close, color: AppColors.gray),
+                        child: const Icon(Icons.arrow_back_rounded, color: AppColors.cloudBlue, size: 28),
                       ),
-                      Expanded(child: DuoProgressBar(value: _round / _totalRounds)),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Text(
+                          'BALON PATLATMA',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 1.0,
+                            shadows: [
+                              Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const SizedBox(width: 48), // Denge için boşluk
                     ],
                   ),
                 ),
+                
+                const SizedBox(height: 10),
+                
+                // Progress Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: SizedBox(
+                      height: 12,
+                      child: LinearProgressIndicator(
+                        value: _round / _totalRounds,
+                        backgroundColor: Colors.white.withOpacity(0.3),
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.sunYellow),
+                      ),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Target Number Display
                 Center(
                   child: Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                     decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(24),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
                       boxShadow: [
-                        const BoxShadow(
-                          color: Color(0x33000000),
-                          offset: Offset(0, 4),
-                        ),
                         BoxShadow(
-                          color: AppColors.purpleDark.withOpacity(0.3),
+                          color: Colors.black.withOpacity(0.1),
                           offset: const Offset(0, 8),
-                          blurRadius: 15,
+                          blurRadius: 10,
                         ),
                       ],
-                      border: Border.all(color: AppColors.purpleDark.withOpacity(0.1), width: 2),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.purpleLight.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.flash_on_rounded, color: AppColors.gold, size: 24),
-                        ),
-                        const SizedBox(width: 16),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'HEDEF SAYI',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.gray,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                            Text(
-                              '$_targetNumber',
-                              style: const TextStyle(
-                                fontSize: 40,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.purpleDark,
-                                height: 1,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                      ],
+                    child: Text(
+                      '$_targetNumber',
+                      style: const TextStyle(
+                        fontSize: 60,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.purpleDark,
+                        height: 1,
+                        shadows: [
+                          Shadow(color: Colors.black12, offset: Offset(2, 2), blurRadius: 0),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -221,6 +239,7 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
             ),
             
             if (_isGameFinished) _buildResultCard(),
+            
             Align(
               alignment: Alignment.center,
               child: ConfettiWidget(
@@ -236,48 +255,56 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
 
   Widget _buildResultCard() {
     return Container(
-      color: Colors.white,
-      width: double.infinity,
-      height: double.infinity,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'MÜKEMMEL!',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
-              color: AppColors.orange,
-            ),
+      color: Colors.black54,
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
           ),
-          const SizedBox(height: 24),
-          const Text(
-            '🎈⚡',
-            style: TextStyle(fontSize: 80),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Hepsini ustalıkla patlattın!',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.gray,
-            ),
-          ),
-          const SizedBox(height: 48),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 48),
-            child: DuoButton(
-              color: AppColors.orange,
-              shadowColor: AppColors.orangeShadow,
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'DEVAM ET',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'MÜKEMMEL!',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.orange,
+                ),
               ),
-            ),
+              const SizedBox(height: 24),
+              const Text(
+                '🎈⚡',
+                style: TextStyle(fontSize: 80),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Hepsini ustalıkla patlattın!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.gray,
+                ),
+              ),
+              const SizedBox(height: 48),
+              NeumorphicGameButton(
+                color: AppColors.orange,
+                shadowColor: AppColors.orangeShadow,
+                width: 200,
+                height: 60,
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'DEVAM ET',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -286,45 +313,75 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
     if (balloon.isPopped) return const SizedBox.shrink();
 
     return TweenAnimationBuilder<double>(
-      tween: Tween(begin: balloon.y, end: -0.2),
-      duration: Duration(milliseconds: (1 / balloon.speed).toInt() * 100),
+      key: ValueKey('${balloon.number}_${balloon.x}'), 
+      tween: Tween(begin: 1.2, end: -0.3),
+      duration: Duration(milliseconds: (1 / balloon.speed).toInt() * 80), 
       builder: (context, value, child) {
         return Align(
           alignment: Alignment(balloon.x * 2 - 1, value * 2 - 1),
-          child: GestureDetector(
-            onTap: () => _onBalloonPop(balloon),
-            child: Container(
-              width: 90,
-              height: 110,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Balloon Shape
-                  Container(
-                    decoration: BoxDecoration(
-                      color: balloon.color,
-                      borderRadius: const BorderRadius.all(Radius.elliptical(90, 110)),
-                      boxShadow: [
-                        BoxShadow(color: balloon.color.withOpacity(0.4), blurRadius: 10, offset: const Offset(4, 4))
-                      ],
-                    ),
-                  ),
-                  // Balloon String
-                  Positioned(
-                    bottom: 0,
-                    child: Container(width: 2, height: 20, color: Colors.grey.shade400),
-                  ),
-                  // Number
-                  Text(
-                    '${balloon.number}',
-                    style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          child: child,
         );
       },
+      child: GestureDetector(
+        onTap: () => _onBalloonPop(balloon),
+        child: Container(
+          width: 90,
+          height: 110,
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: const Alignment(-0.3, -0.3),
+              radius: 0.8,
+              colors: [
+                Color.alphaBlend(Colors.white.withOpacity(0.4), balloon.color),
+                balloon.color,
+                Color.alphaBlend(Colors.black.withOpacity(0.2), balloon.color),
+              ],
+            ),
+            borderRadius: const BorderRadius.all(Radius.elliptical(90, 110)),
+            boxShadow: [
+              BoxShadow(color: balloon.color.withOpacity(0.4), blurRadius: 10, offset: const Offset(4, 4))
+            ],
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Reflection shine
+              Positioned(
+                top: 15,
+                left: 20,
+                child: Container(
+                  width: 15,
+                  height: 25,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: const BorderRadius.all(Radius.elliptical(15, 25)),
+                  ),
+                ),
+              ),
+              // Tie at bottom
+              Positioned(
+                bottom: -2,
+                child: Column(
+                  children: [
+                    Container(width: 6, height: 6, color: balloon.color),
+                    Container(width: 2, height: 40, color: Colors.white60),
+                  ],
+                ),
+              ),
+              // Number
+              Text(
+                '${balloon.number}',
+                style: const TextStyle(
+                  color: Colors.white, 
+                  fontSize: 32, 
+                  fontWeight: FontWeight.w900,
+                  shadows: [Shadow(color: Colors.black26, offset: Offset(1,1), blurRadius: 2)],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
