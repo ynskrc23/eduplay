@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import '../../../core/app_colors.dart';
 import '../../../core/widgets/neumorphic_game_button.dart';
-import '../../../core/widgets/duo_progress_bar.dart';
 import '../../../core/services/sound_service.dart';
+import '../../../core/widgets/feedback_overlay.dart';
 
 class BalloonPopGame extends StatefulWidget {
   final int childId;
@@ -14,20 +14,26 @@ class BalloonPopGame extends StatefulWidget {
   State<BalloonPopGame> createState() => _BalloonPopGameState();
 }
 
-class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStateMixin {
+class _BalloonPopGameState extends State<BalloonPopGame>
+    with TickerProviderStateMixin {
   late ConfettiController _confettiController;
   final Random _random = Random();
-  
+
   late int _targetNumber;
   List<_BalloonData> _balloons = [];
   int _round = 1;
   final int _totalRounds = 5;
   bool _isGameFinished = false;
+  String? _hintMessage;
+  bool _hintVisible = false;
+  bool _shownWrongOverlayThisRound = false;
 
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 1));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 1),
+    );
     _generateRound();
   }
 
@@ -35,14 +41,14 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
     _targetNumber = _random.nextInt(15) + 1;
     Set<int> ops = {_targetNumber};
     // 4 benzersiz sayı oluştur (Sayılar arası mesafeyi artırmak için balon sayısını azalttık)
-    while(ops.length < 4) {
+    while (ops.length < 4) {
       int nextVal = _random.nextInt(30) + 1;
       if (nextVal != _targetNumber) ops.add(nextVal);
     }
-    
+
     List<int> numbers = ops.toList()..shuffle();
     double segmentWidth = 1.0 / numbers.length;
-    
+
     List<Color> availableColors = [
       AppColors.berryRed,
       AppColors.oceanBlue,
@@ -51,7 +57,7 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
       AppColors.violetMain,
       AppColors.sunYellow,
     ]..shuffle();
-    
+
     setState(() {
       _balloons = numbers.asMap().entries.map((entry) {
         int idx = entry.key;
@@ -64,6 +70,7 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
           speed: 0.003 + (_random.nextDouble() * 0.0015), // Hız düşürüldü
         );
       }).toList();
+      _shownWrongOverlayThisRound = false;
     });
   }
 
@@ -83,6 +90,27 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
       _nextRound();
     } else {
       SoundService.instance.playWrong();
+      setState(() {
+        _hintMessage = balloon.number < _targetNumber
+            ? 'Biraz daha BÜYÜK sayıyı seç!'
+            : 'Biraz daha KÜÇÜK sayıyı seç!';
+        _hintVisible = true;
+      });
+      Future.delayed(const Duration(milliseconds: 1200), () {
+        if (mounted) {
+          setState(() => _hintVisible = false);
+        }
+      });
+      if (!_shownWrongOverlayThisRound) {
+        _shownWrongOverlayThisRound = true;
+        FeedbackOverlay.show(
+          context,
+          type: FeedbackType.gentleWrong,
+          title: 'Harika deneme!',
+          message: 'Sakin ol ve tekrar dene 💪',
+          duration: const Duration(milliseconds: 900),
+        );
+      }
     }
   }
 
@@ -91,13 +119,13 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
           setState(() {
-             _round++;
-             _generateRound();
+            _round++;
+            _generateRound();
           });
         }
       });
     } else {
-       Future.delayed(const Duration(milliseconds: 500), () {
+      Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
           setState(() {
             _isGameFinished = true;
@@ -105,29 +133,6 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
         }
       });
     }
-  }
-
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('HARİKA!', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.orange)),
-        content: const Text('Tüm balonları uçurdun! 🎈', textAlign: TextAlign.center),
-        actions: [
-          NeumorphicGameButton(
-            color: AppColors.orange,
-            shadowColor: AppColors.orangeShadow,
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('TAMAM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -144,13 +149,16 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
         child: Stack(
           children: [
             // Floating Balloons
-            ..._balloons.map((b) => _buildAnimatedBalloon(b)), 
+            ..._balloons.map((b) => _buildAnimatedBalloon(b)),
 
             // UI Overlay
             Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Row(
                     children: [
                       NeumorphicGameButton(
@@ -161,7 +169,11 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
                         shadowColor: Colors.blueGrey.shade200,
                         padding: EdgeInsets.zero,
                         onPressed: () => Navigator.pop(context),
-                        child: const Icon(Icons.arrow_back_rounded, color: AppColors.cloudBlue, size: 28),
+                        child: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: AppColors.cloudBlue,
+                          size: 28,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       const Expanded(
@@ -175,7 +187,11 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
                             color: Colors.white,
                             letterSpacing: 1.0,
                             shadows: [
-                              Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4),
+                              Shadow(
+                                color: Colors.black26,
+                                offset: Offset(2, 2),
+                                blurRadius: 4,
+                              ),
                             ],
                           ),
                         ),
@@ -185,9 +201,9 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 10),
-                
+
                 // Progress Bar
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -198,18 +214,23 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
                       child: LinearProgressIndicator(
                         value: _round / _totalRounds,
                         backgroundColor: Colors.white.withOpacity(0.3),
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.sunYellow),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AppColors.sunYellow,
+                        ),
                       ),
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Target Number Display
                 Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(30),
@@ -229,7 +250,11 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
                         color: AppColors.purpleDark,
                         height: 1,
                         shadows: [
-                          Shadow(color: Colors.black12, offset: Offset(2, 2), blurRadius: 0),
+                          Shadow(
+                            color: Colors.black12,
+                            offset: Offset(2, 2),
+                            blurRadius: 0,
+                          ),
                         ],
                       ),
                     ),
@@ -237,14 +262,62 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
                 ),
               ],
             ),
-            
+
             if (_isGameFinished) _buildResultCard(),
-            
+
             Align(
               alignment: Alignment.center,
               child: ConfettiWidget(
                 confettiController: _confettiController,
                 blastDirectionality: BlastDirectionality.explosive,
+              ),
+            ),
+            // Hint chip
+            Positioned(
+              bottom: 24,
+              left: 24,
+              right: 24,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: _hintVisible ? 1.0 : 0.0,
+                child: _hintMessage == null
+                    ? const SizedBox.shrink()
+                    : Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 10,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.lightbulb,
+                              color: AppColors.sunYellow,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _hintMessage!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.darkText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
               ),
             ),
           ],
@@ -276,10 +349,7 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                '🎈⚡',
-                style: TextStyle(fontSize: 80),
-              ),
+              const Text('🎈⚡', style: TextStyle(fontSize: 80)),
               const SizedBox(height: 24),
               const Text(
                 'Hepsini ustalıkla patlattın!',
@@ -299,7 +369,11 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
                   'DEVAM ET',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ],
@@ -313,9 +387,9 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
     if (balloon.isPopped) return const SizedBox.shrink();
 
     return TweenAnimationBuilder<double>(
-      key: ValueKey('${balloon.number}_${balloon.x}'), 
+      key: ValueKey('${balloon.number}_${balloon.x}'),
       tween: Tween(begin: 1.2, end: -0.3),
-      duration: Duration(milliseconds: (1 / balloon.speed).toInt() * 80), 
+      duration: Duration(milliseconds: (1 / balloon.speed).toInt() * 80),
       builder: (context, value, child) {
         return Align(
           alignment: Alignment(balloon.x * 2 - 1, value * 2 - 1),
@@ -339,7 +413,11 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
             ),
             borderRadius: const BorderRadius.all(Radius.elliptical(90, 110)),
             boxShadow: [
-              BoxShadow(color: balloon.color.withOpacity(0.4), blurRadius: 10, offset: const Offset(4, 4))
+              BoxShadow(
+                color: balloon.color.withOpacity(0.4),
+                blurRadius: 10,
+                offset: const Offset(4, 4),
+              ),
             ],
           ),
           child: Stack(
@@ -354,7 +432,9 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
                   height: 25,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.3),
-                    borderRadius: const BorderRadius.all(Radius.elliptical(15, 25)),
+                    borderRadius: const BorderRadius.all(
+                      Radius.elliptical(15, 25),
+                    ),
                   ),
                 ),
               ),
@@ -372,10 +452,16 @@ class _BalloonPopGameState extends State<BalloonPopGame> with TickerProviderStat
               Text(
                 '${balloon.number}',
                 style: const TextStyle(
-                  color: Colors.white, 
-                  fontSize: 32, 
+                  color: Colors.white,
+                  fontSize: 32,
                   fontWeight: FontWeight.w900,
-                  shadows: [Shadow(color: Colors.black26, offset: Offset(1,1), blurRadius: 2)],
+                  shadows: [
+                    Shadow(
+                      color: Colors.black26,
+                      offset: Offset(1, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
                 ),
               ),
             ],

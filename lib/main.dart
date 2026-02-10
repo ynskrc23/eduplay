@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'data/repositories/child_repository.dart';
 import 'features/child_profile/screens/create_profile_screen.dart';
-import 'features/game/screens/game_page.dart';
-import 'features/game/screens/level_map_screen.dart';
 import 'features/game/screens/game_hub_screen.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'data/database/database_helper.dart';
+import 'core/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,14 +30,7 @@ class EduPlayApp extends StatelessWidget {
     return MaterialApp(
       title: 'EduPlay Matematik',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
-          brightness: Brightness.light,
-        ),
-        fontFamily: 'Roboto',
-      ),
+      theme: AppTheme.light(),
       home: const BootScreen(),
     );
   }
