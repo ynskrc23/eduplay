@@ -5,6 +5,11 @@ import '../../../core/app_colors.dart';
 import '../../../core/widgets/neumorphic_game_button.dart';
 import '../../../core/services/sound_service.dart';
 import '../../../core/widgets/feedback_overlay.dart';
+import '../../../data/models/game_session.dart';
+import '../../../data/repositories/game_session_repository.dart';
+import '../../../data/repositories/game_repository.dart';
+import '../../../data/models/child_profile.dart';
+import '../../../data/models/game.dart';
 
 class BalloonPopGame extends StatefulWidget {
   final int childId;
@@ -29,13 +34,51 @@ class _BalloonPopGameState extends State<BalloonPopGame>
   bool _shownWrongOverlayThisRound = false;
   int _attempt = 0;
 
+  final GameSessionRepository _sessionRepo = GameSessionRepository();
+  final GameRepository _gameRepo = GameRepository();
+  int? _currentSessionId;
+  int _correctCount = 0;
+  int _wrongCount = 0;
+  DateTime? _startedAt;
+  Game? _game;
+
   @override
   void initState() {
     super.initState();
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 1),
     );
+    _initSession();
     _generateRound();
+  }
+
+  Future<void> _initSession() async {
+    _startedAt = DateTime.now();
+    _game = await _gameRepo.getGameByCode('BALLOON_POP');
+    
+    // If BALLOON_POP doesn't exist yet, we'll use a placeholder or create it
+    // For now find any game or default to 1 (Math Race)
+    final gameId = _game?.id ?? 1; 
+
+    final session = GameSession(
+      childId: widget.childId,
+      gameId: gameId,
+      levelId: 1, // Default level
+      startedAt: _startedAt!,
+    );
+    _currentSessionId = await _sessionRepo.createSession(session);
+  }
+
+  Future<void> _endSession() async {
+    if (_currentSessionId != null) {
+      await _sessionRepo.updateSessionEnd(
+        _currentSessionId!,
+        DateTime.now(),
+        _correctCount,
+        _wrongCount,
+      );
+      _currentSessionId = null;
+    }
   }
 
   void _generateRound() {
@@ -79,6 +122,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
     if (balloon.isPopped) return;
 
     if (balloon.number == _targetNumber) {
+      _correctCount++;
       SoundService.instance.playCorrect();
       _confettiController.play();
       setState(() {
@@ -90,6 +134,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
       });
       _nextRound();
     } else {
+      _wrongCount++;
       SoundService.instance.playWrong();
       setState(() {
         _hintMessage = balloon.number < _targetNumber
@@ -137,6 +182,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
           setState(() {
             _isGameFinished = true;
           });
+          _endSession();
         }
       });
     }
@@ -144,6 +190,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
 
   @override
   void dispose() {
+    _endSession();
     _confettiController.dispose();
     super.dispose();
   }

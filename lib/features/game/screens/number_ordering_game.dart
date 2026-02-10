@@ -4,6 +4,10 @@ import 'package:confetti/confetti.dart';
 import '../../../core/app_colors.dart';
 import '../../../core/widgets/neumorphic_game_button.dart';
 import '../../../core/services/sound_service.dart';
+import '../../../data/models/game_session.dart';
+import '../../../data/repositories/game_session_repository.dart';
+import '../../../data/repositories/game_repository.dart';
+import '../../../data/models/game.dart';
 
 class NumberOrderingGame extends StatefulWidget {
   final int childId;
@@ -24,11 +28,47 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
   final int _totalRounds = 5;
   bool _isGameFinished = false;
 
+  final GameSessionRepository _sessionRepo = GameSessionRepository();
+  final GameRepository _gameRepo = GameRepository();
+  int? _currentSessionId;
+  int _correctCount = 0;
+  int _wrongCount = 0;
+  bool _roundMistakeMade = false;
+  DateTime? _startedAt;
+  Game? _game;
+
   @override
   void initState() {
     super.initState();
     _confettiController = ConfettiController(duration: const Duration(seconds: 1));
+    _initSession();
     _generateRound();
+  }
+
+  Future<void> _initSession() async {
+    _startedAt = DateTime.now();
+    _game = await _gameRepo.getGameByCode('NUMBER_ORDERING');
+    final gameId = _game?.id ?? 1;
+
+    final session = GameSession(
+      childId: widget.childId,
+      gameId: gameId,
+      levelId: 1, 
+      startedAt: _startedAt!,
+    );
+    _currentSessionId = await _sessionRepo.createSession(session);
+  }
+
+  Future<void> _endSession() async {
+    if (_currentSessionId != null) {
+      await _sessionRepo.updateSessionEnd(
+        _currentSessionId!,
+        DateTime.now(),
+        _correctCount,
+        _wrongCount,
+      );
+      _currentSessionId = null;
+    }
   }
 
   void _generateRound() {
@@ -43,6 +83,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
     setState(() {
       _currentNumbers = nums.toList()..shuffle();
       _userSelection = [];
+      _roundMistakeMade = false;
     });
   }
 
@@ -60,10 +101,15 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
       SoundService.instance.playCorrect();
 
       if (_userSelection.length == _currentNumbers.length) {
+        _correctCount++;
         _confettiController.play();
         _nextRound();
       }
     } else {
+      if (!_roundMistakeMade) {
+        _wrongCount++;
+        _roundMistakeMade = true;
+      }
       SoundService.instance.playWrong();
       setState(() {
         _errorText = 'Yanlış Sıra!';
@@ -88,6 +134,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
           setState(() {
              _isGameFinished = true;
           });
+          _endSession();
         }
       });
     }
@@ -120,6 +167,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
 
   @override
   void dispose() {
+    _endSession();
     _confettiController.dispose();
     super.dispose();
   }

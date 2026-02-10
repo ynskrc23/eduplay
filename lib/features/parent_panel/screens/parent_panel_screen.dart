@@ -85,10 +85,10 @@ class _ParentPanelScreenState extends State<ParentPanelScreen> {
           ),
         ),
         title: Text(
-          widget.childProfile.name,
+          widget.childProfile.name.toUpperCase(),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        subtitle: Text('Toplam Puan: ${widget.childProfile.totalScore} | Mevcut Seviye: ${widget.childProfile.currentLevel + 1}'),
+        subtitle: Text('Toplam Puan: ${widget.childProfile.totalScore}'),
       ),
     );
   }
@@ -199,7 +199,9 @@ class _ParentPanelScreenState extends State<ParentPanelScreen> {
                   color: session.correctCount >= 5 ? Colors.amber : Colors.grey,
                 ),
                 title: Text(DateFormat('d MMMM y, HH:mm', 'tr_TR').format(session.startedAt)),
-                subtitle: Text('Seviye: ${session.levelId}'),
+                subtitle: Text(session.endedAt != null 
+                  ? 'Süre: ${session.endedAt!.difference(session.startedAt).inMinutes} dk ${session.endedAt!.difference(session.startedAt).inSeconds % 60} sn'
+                  : 'Süre: -'),
                 trailing: Text(
                   '${session.correctCount} Doğru / ${session.wrongCount} Yanlış',
                   style: TextStyle(

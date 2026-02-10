@@ -233,6 +233,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
           });
         }
       } else {
+        _wrongCount++;
         _comboCount = 0;
         _feedbackMessage = "Cevap bu değil, tekrar dene! 💪";
         SoundService.instance.playWrong();
@@ -631,109 +632,148 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
       ),
     );
   }
-  
-  Widget _buildResultCard({required String title, required String message}) {
-    return Center(
-      child: Container(
-        margin: const EdgeInsets.all(24),
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(title, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.oceanBlue)),
-             const SizedBox(height: 24),
-            Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, color: AppColors.gray)),
-            const SizedBox(height: 32),
-            NeumorphicGameButton(
-              color: AppColors.oceanBlue,
-              shadowColor: AppColors.oceanBlueShadow,
-              width: 200, 
-              height: 60,
-              onPressed: _exitGame,
-              child: const Text('TEKRAR OYNA', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ),
-          ],
+   Widget _buildResultCard({required String title, required String message}) {
+    return Container(
+      color: Colors.black54, // Overlay
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.orange,
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text('🎉', style: TextStyle(fontSize: 80)),
+              const SizedBox(height: 24),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.gray,
+                ),
+              ),
+              const SizedBox(height: 48),
+              NeumorphicGameButton(
+                color: AppColors.orange,
+                shadowColor: AppColors.orangeShadow,
+                width: 200,
+                height: 60,
+                onPressed: _exitGame,
+                child: const Text(
+                  'DEVAM ET',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-
-
-
   Widget _buildLevelUpCard() {
     if (_isFreeMode) {
-      return _buildResultCard(title: 'Harika!', message: 'Seçtiğin modu başarıyla tamamladın! 🎉');
+      return _buildResultCard(
+        title: 'MÜKEMMEL!',
+        message: 'Seçtiğin modu başarıyla tamamladın!',
+      );
     }
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-           Container(
-             padding: const EdgeInsets.all(32),
-             decoration: BoxDecoration(
-               color: Colors.white,
-               shape: BoxShape.circle,
-               boxShadow: [
-                 BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 30, offset: const Offset(0, 10)),
-               ],
-             ),
-             child: const Icon(Icons.star_rounded, size: 80, color: AppColors.sunYellow),
-           ),
-           const SizedBox(height: 32),
-           Text(
-             _isNextLevelUnlocked ? 'SEVİYE TAMAMLANDI!' : 'BÖLÜM BİTTİ!',
-             style: const TextStyle(
-               fontSize: 28,
-               fontWeight: FontWeight.w900,
-               color: Colors.white,
-             ),
-           ),
-           const SizedBox(height: 16),
-           if (!_isNextLevelUnlocked)
-             const Padding(
-               padding: EdgeInsets.symmetric(horizontal: 24),
-               child: Text(
-                 'Sıradaki seviye için biraz daha puan toplamalısın!',
-                 textAlign: TextAlign.center,
-                 style: TextStyle(fontSize: 16, color: Colors.white70, fontWeight: FontWeight.bold),
-               ),
-             ),
-           if (_lastLevelGift > 0)
-             Text(
-               '+$_lastLevelGift Puan Hediye!',
-               style: const TextStyle(fontSize: 20, color: AppColors.sunYellow, fontWeight: FontWeight.bold),
-             ),
-           const SizedBox(height: 32),
-           NeumorphicGameButton(
-             color: AppColors.oceanBlue,
-             shadowColor: AppColors.oceanBlueShadow,
-             width: 200,
-             height: 60,
-             onPressed: _isNextLevelUnlocked 
-                ? () {
-                    setState(() {
-                      _currentLevelIndex++;
-                      _status = GameStatus.playing;
-                      _correctCount = 0;
-                      _wrongCount = 0;
-                      _comboCount = 0;
-                      _feedbackMessage = '';
-                      _levelTarget = min(5 + (_currentLevelIndex * 2), 15);
-                      _generateQuestion();
-                    });
-                  }
-                : _exitGame,
-             child: Text(
-               _isNextLevelUnlocked ? 'SONRAKİ SEVİYE' : 'MENÜYE DÖN',
-               style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
-             ),
-           ),
-        ],
+
+    String title = _isNextLevelUnlocked ? 'MÜKEMMEL!' : 'BÖLÜM BİTTİ!';
+    String message = _isNextLevelUnlocked 
+        ? 'Canavarı yendin ve zafer kazandın!' 
+        : 'Sıradaki seviye için biraz daha puan toplamalısın!';
+    
+    if (_lastLevelGift > 0) {
+      message += '\n+$_lastLevelGift Puan Hediye!';
+    }
+
+    return Container(
+      color: Colors.black54, // Overlay
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.orange,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                _isNextLevelUnlocked ? '🏆' : '💪',
+                style: const TextStyle(fontSize: 80),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.gray,
+                ),
+              ),
+              const SizedBox(height: 48),
+              NeumorphicGameButton(
+                color: AppColors.orange,
+                shadowColor: AppColors.orangeShadow,
+                width: 200,
+                height: 60,
+                onPressed: _isNextLevelUnlocked 
+                  ? () {
+                      setState(() {
+                        _currentLevelIndex++;
+                        _status = GameStatus.playing;
+                        _correctCount = 0;
+                        _wrongCount = 0;
+                        _comboCount = 0;
+                        _feedbackMessage = '';
+                        _levelTarget = min(5 + (_currentLevelIndex * 2), 15);
+                        _generateQuestion();
+                      });
+                    }
+                  : _exitGame,
+                child: Text(
+                  _isNextLevelUnlocked ? 'SONRAKİ SEVİYE' : 'DEVAM ET',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
