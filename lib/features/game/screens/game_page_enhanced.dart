@@ -685,52 +685,13 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
   }
 
   Widget _buildLevelUpCard() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'HARİKA!',
-            style: TextStyle(
-              fontSize: 40, 
-              fontWeight: FontWeight.w900, 
-              color: AppColors.sunYellow,
-              shadows: [
-                Shadow(
-                  color: Colors.black26,
-                  offset: Offset(2, 2),
-                  blurRadius: 4,
-                ),
-              ],
-            ),
-          ).animate().fadeIn().scale(curve: Curves.elasticOut, duration: 600.ms),
-          const SizedBox(height: 16),
-          const Text(
-            'Canavarı yendin ve zafer kazandın!',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ).animate().fadeIn(delay: 200.ms),
-          const SizedBox(height: 48),
-          NeumorphicGameButton(
-            color: AppColors.orange,
-            shadowColor: AppColors.orangeShadow,
-            width: 200,
-            height: 60,
-            onPressed: _exitGame,
-            child: const Text(
-              'TAMAM',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20),
-            ),
-          ).animate().scale(delay: 400.ms, curve: Curves.elasticOut),
-        ],
-      ),
+    return _buildResultCard(
+      title: 'MÜKEMMEL!',
+      message: 'Canavarı yendin ve zafer kazandın!',
+      icon: Icons.emoji_events_rounded,
+      color: AppColors.orange,
     );
   }
-
 
   Widget _buildResultCard({
     required String title,
@@ -738,64 +699,63 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
     required IconData icon,
     required Color color,
   }) {
-    bool isWin = title == 'Tebrikler!';
+    bool isWin = title == 'Tebrikler!' || title == 'MÜKEMMEL!';
     
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            title.toUpperCase(),
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              shadows: const [
-                Shadow(
-                  color: Colors.black26,
-                  offset: Offset(2, 2),
-                  blurRadius: 4,
-                ),
-              ],
-            ),
+    return Container(
+      color: Colors.black54, // Overlay
+      child: Center(
+        child: Container(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
           ),
-          const SizedBox(height: 32),
-          Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  color: isWin ? AppColors.orange : AppColors.berryRed,
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Icon(icon, size: 100, color: isWin ? Colors.amber : Colors.red),
-                const SizedBox(height: 24),
-                Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 18, color: AppColors.textMain, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                isWin ? '🏆' : '💪',
+                style: const TextStyle(fontSize: 80),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.gray,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 48),
+              NeumorphicGameButton(
+                color: isWin ? AppColors.orange : AppColors.oceanBlue,
+                shadowColor: isWin ? AppColors.orangeShadow : AppColors.oceanBlueShadow,
+                width: 200,
+                height: 60,
+                onPressed: isWin ? _exitGame : _startGame,
+                child: Text(
+                  isWin ? 'DEVAM ET' : 'TEKRAR DENE',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 48),
-          DuoButton(
-            color: isWin ? AppColors.green : AppColors.blue,
-            shadowColor: isWin ? AppColors.greenShadow : AppColors.blueShadow,
-            onPressed: isWin ? _exitGame : _startGame,
-            child: Text(
-              isWin ? 'DEVAM ET' : 'TEKRAR DENE',
-              style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 18),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

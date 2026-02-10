@@ -27,6 +27,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
   String? _hintMessage;
   bool _hintVisible = false;
   bool _shownWrongOverlayThisRound = false;
+  int _attempt = 0;
 
   @override
   void initState() {
@@ -97,21 +98,27 @@ class _BalloonPopGameState extends State<BalloonPopGame>
         _hintVisible = true;
       });
       Future.delayed(const Duration(milliseconds: 1200), () {
-        if (mounted) {
-          setState(() => _hintVisible = false);
-        }
-      });
-      if (!_shownWrongOverlayThisRound) {
-        _shownWrongOverlayThisRound = true;
-        FeedbackOverlay.show(
-          context,
-          type: FeedbackType.gentleWrong,
-          title: 'Harika deneme!',
-          message: 'Sakin ol ve tekrar dene 💪',
-          duration: const Duration(milliseconds: 900),
-        );
+      if (mounted) {
+        setState(() => _hintVisible = false);
       }
-    }
+    });
+  }
+}
+
+  void _repeatRound() {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _attempt++;
+          for (var b in _balloons) {
+            b.isMissed = false;
+            b.isPopped = false;
+          }
+          _shownWrongOverlayThisRound = false;
+          _hintVisible = false;
+        });
+      }
+    });
   }
 
   void _nextRound() {
@@ -349,7 +356,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
                 ),
               ),
               const SizedBox(height: 24),
-              const Text('🎈⚡', style: TextStyle(fontSize: 80)),
+              const Text('🎈', style: TextStyle(fontSize: 80)),
               const SizedBox(height: 24),
               const Text(
                 'Hepsini ustalıkla patlattın!',
@@ -384,12 +391,27 @@ class _BalloonPopGameState extends State<BalloonPopGame>
   }
 
   Widget _buildAnimatedBalloon(_BalloonData balloon) {
-    if (balloon.isPopped) return const SizedBox.shrink();
+    if (balloon.isPopped || balloon.isMissed) return const SizedBox.shrink();
 
     return TweenAnimationBuilder<double>(
-      key: ValueKey('${balloon.number}_${balloon.x}'),
+      key: ValueKey('${balloon.number}_${balloon.x}_$_attempt'),
       tween: Tween(begin: 1.2, end: -0.3),
       duration: Duration(milliseconds: (1 / balloon.speed).toInt() * 80),
+      onEnd: () {
+        if (!balloon.isPopped && mounted) {
+          setState(() {
+            balloon.isMissed = true;
+          });
+          // Check if all balloons are gone
+          if (_balloons.every((b) => b.isPopped || b.isMissed)) {
+            // Birisi bile doğru patlatılmadıysa (hepsi kaçtı veya yanlış patladı)
+            bool isCorrectPopped = _balloons.any((b) => b.isPopped && b.number == _targetNumber);
+            if (!isCorrectPopped) {
+              _repeatRound();
+            }
+          }
+        }
+      },
       builder: (context, value, child) {
         return Align(
           alignment: Alignment(balloon.x * 2 - 1, value * 2 - 1),
@@ -406,15 +428,15 @@ class _BalloonPopGameState extends State<BalloonPopGame>
               center: const Alignment(-0.3, -0.3),
               radius: 0.8,
               colors: [
-                Color.alphaBlend(Colors.white.withOpacity(0.4), balloon.color),
+                Color.alphaBlend(Colors.white.withValues(alpha: 0.4), balloon.color),
                 balloon.color,
-                Color.alphaBlend(Colors.black.withOpacity(0.2), balloon.color),
+                Color.alphaBlend(Colors.black.withValues(alpha: 0.2), balloon.color),
               ],
             ),
             borderRadius: const BorderRadius.all(Radius.elliptical(90, 110)),
             boxShadow: [
               BoxShadow(
-                color: balloon.color.withOpacity(0.4),
+                color: balloon.color.withValues(alpha: 0.4),
                 blurRadius: 10,
                 offset: const Offset(4, 4),
               ),
@@ -431,7 +453,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
                   width: 15,
                   height: 25,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     borderRadius: const BorderRadius.all(
                       Radius.elliptical(15, 25),
                     ),
@@ -479,6 +501,7 @@ class _BalloonData {
   final double y;
   final double speed;
   bool isPopped = false;
+  bool isMissed = false;
 
   _BalloonData({
     required this.number,

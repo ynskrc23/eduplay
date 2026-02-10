@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import '../app_colors.dart';
 
 enum FeedbackType { success, gentleWrong }
@@ -36,23 +35,24 @@ class FeedbackOverlay extends StatelessWidget {
         );
       },
       transitionBuilder: (_, anim, __, child) {
-        return ScaleTransition(scale: CurvedAnimation(parent: anim, curve: Curves.easeOutBack), child: child);
+        return ScaleTransition(
+          scale: CurvedAnimation(parent: anim, curve: Curves.easeOutBack),
+          child: child,
+        );
       },
     );
     await Future.delayed(duration);
-    Navigator.of(context, rootNavigator: true).pop();
+    if (context.mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final String lottieUrl = switch (type) {
-      FeedbackType.success =>
-        'https://lottie.host/7c295a0e-9a6c-44b4-9f39-2e3f3f0f1af9/9wCzKJpHfF.json', // fireworks
-      FeedbackType.gentleWrong =>
-        'https://lottie.host/14f40602-7b2f-4dca-b4e4-79b3b6badd4d/NpR7rIuXgY.json', // soft warning
-    };
-
-    final Color accent = type == FeedbackType.success ? AppColors.leafGreen : AppColors.sunYellow;
+    final Color accent = type == FeedbackType.success
+        ? AppColors.leafGreen
+        : AppColors.sunYellow;
+    final String emoji = type == FeedbackType.success ? '🎉' : '💡';
 
     return Material(
       color: Colors.transparent,
@@ -63,35 +63,51 @@ class FeedbackOverlay extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(32),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 16, offset: const Offset(0, 8)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              height: 120,
-              child: Lottie.network(lottieUrl, repeat: false),
+            AnimatedScale(
+              scale: 1.0,
+              duration: const Duration(milliseconds: 300),
+              child: Text(emoji, style: const TextStyle(fontSize: 64)),
             ),
             const SizedBox(height: 12),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.darkText),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                color: AppColors.darkText,
+              ),
             ),
             if (message != null) ...[
               const SizedBox(height: 8),
               Text(
                 message!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.gray),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.gray,
+                ),
               ),
             ],
             const SizedBox(height: 8),
             Container(
               width: 60,
               height: 6,
-              decoration: BoxDecoration(color: accent, borderRadius: BorderRadius.circular(3)),
+              decoration: BoxDecoration(
+                color: accent,
+                borderRadius: BorderRadius.circular(3),
+              ),
             ),
           ],
         ),

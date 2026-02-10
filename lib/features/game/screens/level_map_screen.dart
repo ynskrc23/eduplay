@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../data/models/child_profile.dart';
-import '../../../data/models/level.dart';
 import '../../../data/repositories/game_repository.dart';
 import '../../../data/repositories/child_repository.dart';
 import '../../../core/app_colors.dart';
-import '../../../core/widgets/duo_button.dart';
+import '../../../core/widgets/neumorphic_game_button.dart';
 import 'game_page_modern.dart';
 import '../../parent_panel/screens/parent_panel_screen.dart';
 
@@ -20,10 +20,11 @@ class LevelMapScreen extends StatefulWidget {
 class _LevelMapScreenState extends State<LevelMapScreen> {
   final GameRepository _gameRepo = GameRepository();
   final ChildRepository _childRepo = ChildRepository();
-  
+
   ChildProfile? _childProfile;
-  List<Level> _levels = [];
   bool _isLoading = true;
+  String? _selectedOperation; // '+', '-', '*', '/'
+  String? _selectedDifficulty; // 'kolay' | 'orta' | 'zor'
 
   @override
   void initState() {
@@ -33,24 +34,16 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
 
   Future<void> _loadData() async {
     final profile = await _childRepo.getProfileById(widget.childId);
-    final game = await _gameRepo.getGameByCode('MATH_RACE');
-    if (game != null) {
-      final levels = await _gameRepo.getLevelsByGameId(game.id!);
-      setState(() {
-        _childProfile = profile;
-        _levels = levels;
-        _isLoading = false;
-      });
-
-      // Daily Reward Check
-      _checkDailyReward();
-    }
+    setState(() {
+      _childProfile = profile;
+      _isLoading = false;
+    });
+    _checkDailyReward();
   }
 
   Future<void> _checkDailyReward() async {
     final reward = await _childRepo.checkAndClaimDailyReward(widget.childId);
     if (reward != null && mounted) {
-      // Reload profile to show new score
       final profile = await _childRepo.getProfileById(widget.childId);
       setState(() {
         _childProfile = profile;
@@ -59,8 +52,11 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('🎁 Günlük Ödül!', textAlign: TextAlign.center),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text('🎁 GÜNLÜK ÖDÜL!', 
+            textAlign: TextAlign.center,
+            style: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: AppColors.orange),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -69,15 +65,17 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
               Text(
                 'Bugün giriş yaptığın için $reward puan kazandın!',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 18),
+                style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkText),
               ),
             ],
           ),
           actions: [
             Center(
-              child: FilledButton(
+              child: NeumorphicGameButton(
+                color: AppColors.leafGreen,
+                shadowColor: AppColors.leafGreenShadow,
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Yaşasın!'),
+                child: Text('YAŞASIN!', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900)),
               ),
             ),
           ],
@@ -88,262 +86,249 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Stack(
-              children: [
-                // Vibrant Background
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        AppColors.purpleLight,
-                        AppColors.purpleDark,
-                      ],
-                    ),
+      backgroundColor: AppColors.cloudBlue,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.cloudBlue, AppColors.purpleLight],
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // Background Decorations
+              Positioned(top: 100, left: 30, child: _buildBackgroundElement(Icons.stars_rounded, Colors.white.withValues(alpha: 0.2), 30)),
+              Positioned(bottom: 200, left: 50, child: _buildBackgroundElement(Icons.bubble_chart_rounded, Colors.white.withValues(alpha: 0.15), 40)),
+              Positioned(top: 150, right: 40, child: _buildBackgroundElement(Icons.favorite_rounded, Colors.white.withValues(alpha: 0.1), 25)),
+              Positioned(bottom: 100, right: 60, child: _buildBackgroundElement(Icons.star_rounded, Colors.white.withValues(alpha: 0.2), 35)),
+
+              Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(
+                    child: _buildSelection(),
                   ),
-                ),
-                
-                // Main Layout
-                Column(
-                  children: [
-                    _buildHeader(),
-                    Expanded(
-                      child: _buildMapPath(),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
+  }
+
+  Widget _buildBackgroundElement(IconData icon, Color color, double size) {
+    return Icon(icon, color: color, size: size)
+        .animate(onPlay: (controller) => controller.repeat(reverse: true))
+        .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.2, 1.2), duration: 2.seconds)
+        .rotate(begin: -0.1, end: 0.1);
   }
 
   Widget _buildHeader() {
-    return Container(
-      margin: const EdgeInsets.only(top: 48, left: 16, right: 16, bottom: 8),
-      padding: const EdgeInsets.only(left: 8, right: 16, top: 12, bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
-          // Back Button
-          IconButton(
+          NeumorphicGameButton(
+            width: 48,
+            height: 48,
+            color: Colors.white,
+            shadowColor: Colors.blueGrey.shade100,
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_rounded, color: AppColors.purpleDark),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+            child: const Icon(Icons.arrow_back_rounded, color: AppColors.cloudBlue, size: 28),
           ),
-          const SizedBox(width: 8),
-          // Avatar
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: const BoxDecoration(
-              color: Colors.indigo,
-              shape: BoxShape.circle,
-            ),
-            child: CircleAvatar(
-              radius: 24,
-              backgroundColor: Colors.white,
-              child: Text(_childProfile?.avatarId ?? '👤', style: const TextStyle(fontSize: 24)),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // User Info
           Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _childProfile?.name ?? 'Oyuncu',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.purpleDark,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                Text(
-                  'Skor: ${_childProfile?.totalScore ?? 0}',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // "USTA" Badge & Settings
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.amber.shade100,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.amber.shade300),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.stars_rounded, color: Colors.amber.shade800, size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  'USTA',
-                  style: TextStyle(
-                    color: Colors.amber.shade900,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            onPressed: () {
-              if (_childProfile != null) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => ParentPanelScreen(childProfile: _childProfile!)),
-                );
-              }
-            },
-            icon: Icon(Icons.settings_rounded, color: Colors.indigo.shade300, size: 24),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            tooltip: 'Ebeveyn Paneli',
-          ),
-        ],
-      ),
-    );
-  }
-
-
-
-  void _checkAndNavigate(String input, String correct) {
-    if (input == correct) {
-      Navigator.pop(context);
-      if (_childProfile != null) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => ParentPanelScreen(childProfile: _childProfile!)),
-        );
-      }
-    } else {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Hatalı giriş! Lütfen tekrar deneyin.'), backgroundColor: Colors.red),
-      );
-    }
-  }
-
-  Widget _buildKey(int number, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          number.toString(),
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.indigo),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMapPath() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 20, bottom: 50),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
-          child: Column(
-            children: List.generate(_levels.length, (index) {
-              final level = _levels[index];
-              final isLocked = (_childProfile?.totalScore ?? 0) < level.unlockScore;
-              final isCurrent = index == _childProfile?.currentLevel;
-              
-              // Zig-zag alignment
-              double padding = (index % 4 == 0) ? 0 : (index % 4 == 1 ? 80.0 : (index % 4 == 2 ? 0 : -80.0));
-
-              return Padding(
-                padding: EdgeInsets.only(left: padding > 0 ? padding : 0, right: padding < 0 ? -padding : 0, bottom: 40),
-                child: _buildLevelNode(level, index, isLocked, isCurrent),
-              );
-            }),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLevelNode(Level level, int index, bool isLocked, bool isCurrent) {
-    Color nodeColor = isLocked ? AppColors.white.withOpacity(0.3) : (isCurrent ? AppColors.yellow : AppColors.blue);
-    Color shadowColor = isLocked ? Colors.black.withOpacity(0.1) : (isCurrent ? AppColors.yellowShadow : AppColors.blueShadow);
-    
-    return Column(
-      children: [
-        DuoButton(
-          width: 80,
-          height: 80,
-          color: nodeColor,
-          shadowColor: shadowColor,
-          onPressed: isLocked ? null : () => _startLevel(index),
-          child: Icon(
-            isLocked ? Icons.lock : (isCurrent ? Icons.star : Icons.play_arrow),
-            color: AppColors.white,
-            size: 40,
-          ),
-        ),
-        if (!isLocked) ...[
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.3)),
-            ),
             child: Text(
-              'SEVİYE ${index + 1}',
-              style: const TextStyle(
-                color: Colors.white,
+              'MATEMATİK YARIŞI',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                fontSize: 24,
                 fontWeight: FontWeight.w900,
-                fontSize: 12,
+                color: Colors.white,
+                letterSpacing: 1.2,
+                shadows: [
+                  const Shadow(
+                    color: Colors.black26,
+                    offset: Offset(2, 2),
+                    blurRadius: 4,
+                  ),
+                ],
               ),
             ),
           ),
+          const SizedBox(width: 48), // Balancing
         ],
-        if (isLocked)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
-              '${level.unlockScore} PUAN',
-              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 10, fontWeight: FontWeight.w900),
-            ),
+      ),
+    );
+  }
+
+  Widget _buildSelection() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      child: Column(
+        children: [
+          _buildSectionHeader('İŞLEM SEÇ', Icons.calculate_rounded),
+          const SizedBox(height: 16),
+          _buildOperationGrid(),
+          const SizedBox(height: 32),
+          _buildSectionHeader('ZORLUK SEÇ', Icons.speed_rounded),
+          const SizedBox(height: 16),
+          _buildDifficultySelection(),
+          const SizedBox(height: 48),
+          _buildStartButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: Colors.white, size: 24),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: GoogleFonts.outfit(
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.5,
+            shadows: [const Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4)],
           ),
+        ),
       ],
     );
   }
 
-  void _startLevel(int levelIndex) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => GamePageModern(childId: widget.childId, initialLevelIndex: levelIndex)),
-    ).then((_) => _loadData()); // Reload data when returning
+  Widget _buildOperationGrid() {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      childAspectRatio: 1.2,
+      children: [
+        _buildOpCard('+', 'TOPLAMA', AppColors.sunYellow, AppColors.sunYellowShadow),
+        _buildOpCard('-', 'ÇIKARMA', AppColors.oceanBlue, AppColors.oceanBlueShadow),
+        _buildOpCard('*', 'ÇARPMA', AppColors.berryRed, AppColors.berryRedShadow),
+        _buildOpCard('/', 'BÖLME', AppColors.leafGreen, AppColors.leafGreenShadow),
+      ],
+    );
+  }
+
+  Widget _buildOpCard(String op, String label, Color color, Color shadow) {
+    bool isSelected = _selectedOperation == op;
+    return NeumorphicGameButton(
+      color: isSelected ? color : Colors.white,
+      shadowColor: isSelected ? shadow : Colors.blueGrey.shade100,
+      onPressed: () => setState(() => _selectedOperation = op),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(op, style: GoogleFonts.outfit(
+            fontSize: 40, 
+            fontWeight: FontWeight.w900, 
+            color: isSelected ? Colors.white : AppColors.darkText
+          )),
+          Text(label, style: GoogleFonts.outfit(
+            fontSize: 16, 
+            fontWeight: FontWeight.w800, 
+            color: isSelected ? Colors.white.withValues(alpha: 0.8) : AppColors.gray
+          )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDifficultySelection() {
+    return Row(
+      children: [
+        _buildDiffCard('kolay', 'KOLAY', Icons.star_rounded, 1),
+        const SizedBox(width: 12),
+        _buildDiffCard('orta', 'ORTA', Icons.stars_rounded, 2),
+        const SizedBox(width: 12),
+        _buildDiffCard('zor', 'ZOR', Icons.workspace_premium_rounded, 3),
+      ],
+    );
+  }
+
+  Widget _buildDiffCard(String key, String label, IconData icon, int stars) {
+    bool isSelected = _selectedDifficulty == key;
+    return Expanded(
+      child: NeumorphicGameButton(
+        height: 100,
+        color: isSelected ? AppColors.violetMain : Colors.white,
+        shadowColor: isSelected ? AppColors.purpleDark : Colors.blueGrey.shade100,
+        onPressed: () => setState(() => _selectedDifficulty = key),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: isSelected ? Colors.white : AppColors.violetMain, size: 32),
+            const SizedBox(height: 4),
+            Text(label, style: GoogleFonts.outfit(
+              fontSize: 14, 
+              fontWeight: FontWeight.w900, 
+              color: isSelected ? Colors.white : AppColors.darkText
+            )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(3, (index) => Icon(
+                Icons.star_rounded, 
+                size: 10, 
+                color: index < stars ? (isSelected ? Colors.white.withValues(alpha: 0.8) : AppColors.gold) : Colors.grey.withValues(alpha: 0.3)
+              )),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStartButton() {
+    bool canStart = _selectedOperation != null && _selectedDifficulty != null;
+    return NeumorphicGameButton(
+      width: double.infinity,
+      height: 70,
+      color: canStart ? AppColors.leafGreen : Colors.white.withValues(alpha: 0.5),
+      shadowColor: canStart ? AppColors.leafGreenShadow : Colors.transparent,
+      onPressed: canStart ? () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => GamePageModern(
+              childId: widget.childId,
+              operation: _selectedOperation,
+              difficulty: _selectedDifficulty,
+            ),
+          ),
+        ).then((_) => _loadData());
+      } : null,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'OYUNU BAŞLAT',
+            style: GoogleFonts.outfit(
+              color: canStart ? Colors.white : AppColors.gray,
+              fontWeight: FontWeight.w900,
+              fontSize: 22,
+              letterSpacing: 1.2,
+            ),
+          ),
+          if (canStart) ...[
+            const SizedBox(width: 12),
+            const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 32),
+          ],
+        ],
+      ),
+    ).animate(target: canStart ? 1 : 0).shimmer(duration: 2.seconds, color: Colors.white24);
   }
 }

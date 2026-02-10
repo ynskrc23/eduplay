@@ -3,6 +3,7 @@ import '../../../data/models/child_profile.dart';
 import '../../../data/repositories/child_repository.dart';
 import '../../../core/app_colors.dart';
 import '../../../core/widgets/duo_button.dart';
+import '../../../core/widgets/mascot_guide.dart';
 import '../../game/screens/game_page.dart';
 import '../../game/screens/level_map_screen.dart';
 import '../../game/screens/game_hub_screen.dart';
@@ -18,11 +19,11 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
-  
+
   // Simple avatar selection for now
   final List<String> _avatars = ['🦁', '🐯', '🐻', '🐼', '🐨', '🐸'];
   String _selectedAvatar = '🦁';
-  
+
   bool _isLoading = false;
   final ChildRepository _repository = ChildRepository();
 
@@ -46,14 +47,16 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
       if (mounted) {
         // Navigate to Game Hub
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => GameHubScreen(childId: createdProfile.id!)),
+          MaterialPageRoute(
+            builder: (context) => GameHubScreen(childId: createdProfile.id!),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata oluştu: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Hata oluştu: $e')));
       }
     } finally {
       if (mounted) {
@@ -73,54 +76,67 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+    final horizontal = isTablet ? 48.0 : 24.0;
+    final vertical = isTablet ? 64.0 : 48.0;
+    final avatarSize = isTablet ? 100.0 : 80.0;
+    final titleStyle = Theme.of(context).textTheme.headlineMedium;
+    final sectionLabelStyle = Theme.of(
+      context,
+    ).textTheme.bodyMedium?.copyWith(color: AppColors.gray);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontal,
+            vertical: vertical,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
-                  'PROFİL OLUŞTUR',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textMain,
-                    letterSpacing: 1.5,
-                  ),
+                Row(
+                  children: [
+                    Expanded(child: Text('PROFİL OLUŞTUR', style: titleStyle)),
+                    const MascotGuide.mini(),
+                  ],
                 ),
-                const SizedBox(height: 48),
-                
+                SizedBox(height: isTablet ? 56 : 48),
+
                 // Avatar Selection
-                const Text(
-                  'BİR AVATAR SEÇ',
-                  style: TextStyle(color: AppColors.gray, fontWeight: FontWeight.w900, fontSize: 14),
-                ),
-                const SizedBox(height: 24),
+                Text('BİR AVATAR SEÇ', style: sectionLabelStyle),
+                SizedBox(height: isTablet ? 28 : 24),
                 SizedBox(
-                  height: 100,
+                  height: isTablet ? 120 : 100,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: _avatars.length,
-                    separatorBuilder: (_, context) => const SizedBox(width: 16),
+                    separatorBuilder: (_, context) =>
+                        SizedBox(width: isTablet ? 20 : 16),
                     itemBuilder: (context, index) {
                       final avatar = _avatars[index];
                       final isSelected = _selectedAvatar == avatar;
                       return DuoButton(
-                        width: 80,
-                        height: 80,
+                        width: avatarSize,
+                        height: avatarSize,
                         color: isSelected ? AppColors.blue : AppColors.white,
-                        shadowColor: isSelected ? AppColors.blueShadow : AppColors.lightGray,
-                        onPressed: () => setState(() => _selectedAvatar = avatar),
-                        child: Text(avatar, style: const TextStyle(fontSize: 40)),
+                        shadowColor: isSelected
+                            ? AppColors.blueShadow
+                            : AppColors.lightGray,
+                        onPressed: () =>
+                            setState(() => _selectedAvatar = avatar),
+                        child: Text(
+                          avatar,
+                          style: TextStyle(fontSize: isTablet ? 44 : 40),
+                        ),
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 48),
+                SizedBox(height: isTablet ? 56 : 48),
 
                 // Name Input
                 _buildDuoInput(
@@ -129,7 +145,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   hint: 'Adın ne?',
                   icon: Icons.face_rounded,
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: isTablet ? 28 : 24),
 
                 // Age Input
                 _buildDuoInput(
@@ -139,23 +155,30 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   icon: Icons.cake_rounded,
                   keyboardType: TextInputType.number,
                 ),
-                const SizedBox(height: 64),
+                SizedBox(height: isTablet ? 72 : 64),
 
                 // Submit Button
                 DuoButton(
                   onPressed: _isLoading ? null : _saveProfile,
                   color: AppColors.green,
                   shadowColor: AppColors.greenShadow,
-                  child: _isLoading 
-                    ? const SizedBox(
-                        height: 24, 
-                        width: 24, 
-                        child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white)
-                      )
-                    : const Text(
-                        'BAŞLA!',
-                        style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w900, fontSize: 20),
-                      ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'BAŞLA!',
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                color: AppColors.white,
+                                fontSize: isTablet ? 22 : 20,
+                              ),
+                        ),
                 ),
               ],
             ),
@@ -172,40 +195,21 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(color: AppColors.gray, fontWeight: FontWeight.w900, fontSize: 14),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.lightGray.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.lightGray, width: 2),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textMain),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: const TextStyle(color: AppColors.gray),
-              border: InputBorder.none,
-              icon: Icon(icon, color: AppColors.blueShadow),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Lütfen burayı doldur';
-              }
-              return null;
-            },
-          ),
-        ),
-      ],
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: Theme.of(context).textTheme.bodyLarge,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon, color: AppColors.oceanBlue),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Lütfen burayı doldur';
+        }
+        return null;
+      },
     );
   }
 }

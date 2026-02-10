@@ -18,7 +18,15 @@ import '../../../core/widgets/neumorphic_game_button.dart';
 class GamePageModern extends StatefulWidget {
   final int childId;
   final int? initialLevelIndex;
-  const GamePageModern({super.key, required this.childId, this.initialLevelIndex});
+  final String? operation; // '+', '-', '*', '/'
+  final String? difficulty; // 'kolay' | 'orta' | 'zor'
+  const GamePageModern({
+    super.key,
+    required this.childId,
+    this.initialLevelIndex,
+    this.operation,
+    this.difficulty,
+  });
 
   @override
   State<GamePageModern> createState() => _GamePageModernState();
@@ -31,6 +39,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
   bool _isNextLevelUnlocked = false;
   int _lastLevelGift = 0;
   int _lastComboBonus = 0;
+  bool get _isFreeMode => widget.operation != null && widget.difficulty != null;
   
   // Game State Variables
   int _correctCount = 0;
@@ -84,14 +93,14 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
   Future<void> _loadGameData() async {
     try {
       final profile = await _childRepo.getProfileById(widget.childId);
-      final game = await _gameRepo.getGameByCode('MATH_RACE');
-      if (game != null && profile != null) {
-        final levels = await _gameRepo.getLevelsByGameId(game.id!);
-        if (levels.isNotEmpty) {
-           final startLevelIndex = widget.initialLevelIndex ?? profile.currentLevel;
-           _currentLevelIndex = (startLevelIndex < levels.length) ? startLevelIndex : 0;
-           final rules = await _gameRepo.getRulesByLevelId(levels[_currentLevelIndex].id!);
-           
+      if (!_isFreeMode) {
+        final game = await _gameRepo.getGameByCode('MATH_RACE');
+        if (game != null && profile != null) {
+          final levels = await _gameRepo.getLevelsByGameId(game.id!);
+          if (levels.isNotEmpty) {
+            final startLevelIndex = widget.initialLevelIndex ?? profile.currentLevel;
+            _currentLevelIndex = (startLevelIndex < levels.length) ? startLevelIndex : 0;
+            final rules = await _gameRepo.getRulesByLevelId(levels[_currentLevelIndex].id!);
             if (mounted) {
               setState(() {
                 _game = game;
@@ -100,16 +109,26 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                 _currentRules = rules;
               });
               await _startGame();
-              if (mounted) {
-                setState(() => _isLoading = false);
-              }
+              if (mounted) setState(() => _isLoading = false);
             }
             return;
           }
         }
-      } catch (e) {
-        debugPrint('Error loading game data: $e');
+      } else {
+        if (mounted) {
+          setState(() {
+            _childProfile = profile;
+            _levels = [];
+            _currentRules = _buildRulesForSelection(widget.operation!, widget.difficulty!);
+          });
+          await _startGame();
+          if (mounted) setState(() => _isLoading = false);
+        }
+        return;
       }
+    } catch (e) {
+      debugPrint('Error loading game data: $e');
+    }
 
       if (mounted) {
         setState(() => _isLoading = false);
@@ -125,14 +144,14 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
   }
 
   Future<void> _startGame() async {
-    if (_levels.isEmpty || _currentRules.isEmpty) {
+    if (_currentRules.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Oyun verisi yüklenemedi!')),
         );
         return;
     }
 
-    if (_game != null && _childProfile != null) {
+    if (!_isFreeMode && _game != null && _childProfile != null) {
       final session = GameSession(
         childId: _childProfile!.id!,
         gameId: _game!.id!,
@@ -148,7 +167,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
       _comboCount = 0;
       _wrongCount = 0;
       _feedbackMessage = '';
-      _levelTarget = min(5 + (_currentLevelIndex * 2), 15);
+      _levelTarget = _isFreeMode ? _targetForDifficulty(widget.difficulty!) : min(5 + (_currentLevelIndex * 2), 15);
       _generateQuestion();
     });
   }
@@ -232,6 +251,12 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
   }
 
   Future<void> _advanceLevel() async {
+    if (_isFreeMode) {
+      setState(() {
+        _status = GameStatus.won;
+      });
+      return;
+    }
     if (_currentSessionId != null) {
       await _sessionRepo.updateSessionEnd(
         _currentSessionId!, 
@@ -361,9 +386,9 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
           Expanded(
             child: Column(
               children: [
-                const Text(
-                  'MATEMATİK OYUNU',
-                  style: TextStyle(
+                Text(
+                  _isFreeMode ? _headerTitleForSelection(widget.operation!, widget.difficulty!) : 'MATEMATİK OYUNU',
+                  style: const TextStyle(
                     fontFamily: 'Roboto',
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
@@ -383,7 +408,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                       value: (_status == GameStatus.levelUp || _status == GameStatus.won) 
                           ? 1.0 
                           : (_correctCount / _levelTarget).clamp(0.0, 1.0),
-                      backgroundColor: Colors.white.withOpacity(0.3),
+                      backgroundColor: Colors.white.withValues(alpha: 0.3),
                       valueColor: const AlwaysStoppedAnimation<Color>(AppColors.sunYellow),
                     ),
                   ),
@@ -392,20 +417,21 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
             ),
           ),
           
-          Container(
-             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-             decoration: BoxDecoration(
-               color: AppColors.orange,
-               borderRadius: BorderRadius.circular(20),
-               boxShadow: [
-                 BoxShadow(color: AppColors.orangeShadow, offset: const Offset(0, 4), blurRadius: 0),
-               ],
-             ),
-             child: Text(
-               'SEVİYE ${_currentLevelIndex + 1}',
-               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-             ),
-          ),
+          if (!_isFreeMode)
+            Container(
+               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+               decoration: BoxDecoration(
+                 color: AppColors.orange,
+                 borderRadius: BorderRadius.circular(20),
+                 boxShadow: [
+                   BoxShadow(color: AppColors.orangeShadow, offset: const Offset(0, 4), blurRadius: 0),
+                 ],
+               ),
+               child: Text(
+                 'SEVİYE ${_currentLevelIndex + 1}',
+                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+               ),
+            ),
         ],
       ),
     );
@@ -628,7 +654,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
               width: 200, 
               height: 60,
               onPressed: _exitGame,
-              child: const Text('DEVAM ET', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text('TEKRAR OYNA', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -640,6 +666,9 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
 
 
   Widget _buildLevelUpCard() {
+    if (_isFreeMode) {
+      return _buildResultCard(title: 'Harika!', message: 'Seçtiğin modu başarıyla tamamladın! 🎉');
+    }
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -707,5 +736,56 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
         ],
       ),
     );
+  }
+
+  List<QuestionRule> _buildRulesForSelection(String operation, String difficulty) {
+    switch (difficulty) {
+      case 'kolay':
+        return [
+          QuestionRule(levelId: 0, operation: operation, minOperand: 1, maxOperand: 9, allowNegative: false),
+        ];
+      case 'orta':
+        return [
+          QuestionRule(levelId: 0, operation: operation, minOperand: 10, maxOperand: 99, allowNegative: false),
+        ];
+      case 'zor':
+        return [
+          QuestionRule(levelId: 0, operation: operation, minOperand: 100, maxOperand: 999, allowNegative: false),
+        ];
+      default:
+        return [
+          QuestionRule(levelId: 0, operation: operation, minOperand: 1, maxOperand: 9, allowNegative: false),
+        ];
+    }
+  }
+
+  int _targetForDifficulty(String difficulty) {
+    switch (difficulty) {
+      case 'kolay':
+        return 5;
+      case 'orta':
+        return 7;
+      case 'zor':
+        return 10;
+      default:
+        return 5;
+    }
+  }
+
+  String _headerTitleForSelection(String operation, String difficulty) {
+    final opText = switch (operation) {
+      '+' => 'Toplama',
+      '-' => 'Çıkarma',
+      '*' => 'Çarpma',
+      '/' => 'Bölme',
+      _ => 'Matematik'
+    };
+    final diffText = switch (difficulty) {
+      'kolay' => 'Kolay',
+      'orta' => 'Orta',
+      'zor' => 'Zor',
+      _ => ''
+    };
+    return '$opText • $diffText';
   }
 }

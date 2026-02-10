@@ -50,7 +50,7 @@ class _NeumorphicGameButtonState extends State<NeumorphicGameButton> {
   @override
   Widget build(BuildContext context) {
     // Top highlight is slightly lighter
-    final Color highlightColor = Color.alphaBlend(Colors.white.withOpacity(0.2), widget.color);
+    final Color highlightColor = Color.alphaBlend(Colors.white.withValues(alpha: 0.2), widget.color);
     // Depth of the 3D effect
     const double depth = 6.0;
     
@@ -79,7 +79,7 @@ class _NeumorphicGameButtonState extends State<NeumorphicGameButton> {
                   ),
                   // Soft drop shadow for ambient occlusion
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     offset: Offset(0, depth + 2),
                     blurRadius: 4,
                   ),

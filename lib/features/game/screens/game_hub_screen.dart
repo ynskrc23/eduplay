@@ -8,6 +8,8 @@ import '../../../core/app_colors.dart';
 import '../../../core/widgets/neumorphic_game_button.dart';
 import '../../../data/models/child_profile.dart';
 import '../../../data/repositories/child_repository.dart';
+import '../../../core/services/sound_service.dart';
+import '../../parent_panel/screens/parent_panel_screen.dart';
 
 class GameHubScreen extends StatefulWidget {
   final int childId;
@@ -21,6 +23,7 @@ class _GameHubScreenState extends State<GameHubScreen> {
   final ChildRepository _childRepo = ChildRepository();
   ChildProfile? _childProfile;
   bool _isLoading = true;
+  bool _isMuted = false;
 
   @override
   void initState() {
@@ -38,16 +41,15 @@ class _GameHubScreenState extends State<GameHubScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     return Scaffold(
       backgroundColor: AppColors.cloudBlue, // New Design Background
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          color: AppColors.cloudBlue,
-        ),
+        decoration: const BoxDecoration(color: AppColors.cloudBlue),
         child: SafeArea(
           child: Column(
             children: [
@@ -68,7 +70,11 @@ class _GameHubScreenState extends State<GameHubScreen> {
                             fontWeight: FontWeight.w900,
                             letterSpacing: 1.2,
                             shadows: [
-                              Shadow(color: Colors.black.withOpacity(0.2), offset: const Offset(2, 2), blurRadius: 4),
+                              Shadow(
+                                color: Colors.black.withOpacity(0.2),
+                                offset: const Offset(2, 2),
+                                blurRadius: 4,
+                              ),
                             ],
                           ),
                         ),
@@ -83,8 +89,11 @@ class _GameHubScreenState extends State<GameHubScreen> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => LevelMapScreen(childId: widget.childId)),
-                          );
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  LevelMapScreen(childId: widget.childId),
+                            ),
+                          ).then((_) => _loadProfile());
                         },
                       ),
                       const SizedBox(height: 20),
@@ -97,8 +106,11 @@ class _GameHubScreenState extends State<GameHubScreen> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => NumberOrderingGame(childId: widget.childId)),
-                          );
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  NumberOrderingGame(childId: widget.childId),
+                            ),
+                          ).then((_) => _loadProfile());
                         },
                       ),
                       const SizedBox(height: 20),
@@ -111,8 +123,11 @@ class _GameHubScreenState extends State<GameHubScreen> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => GamePageEnhanced(childId: widget.childId)),
-                          );
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  GamePageEnhanced(childId: widget.childId),
+                            ),
+                          ).then((_) => _loadProfile());
                         },
                       ),
                       const SizedBox(height: 20),
@@ -122,12 +137,16 @@ class _GameHubScreenState extends State<GameHubScreen> {
                         icon: '🎈',
                         color: AppColors.sunYellow,
                         shadow: AppColors.sunYellowShadow,
-                        textColor: AppColors.darkText, // Yellow bg needs dark text
+                        textColor:
+                            AppColors.darkText, // Yellow bg needs dark text
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => BalloonPopGame(childId: widget.childId)),
-                          );
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  BalloonPopGame(childId: widget.childId),
+                            ),
+                          ).then((_) => _loadProfile());
                         },
                       ),
                     ],
@@ -172,51 +191,97 @@ class _GameHubScreenState extends State<GameHubScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _childProfile?.name ?? '',
+                    (_childProfile?.name ?? '').toUpperCase(),
                     style: const TextStyle(
-                      color: Colors.white, 
-                      fontWeight: FontWeight.w900, 
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
                       fontSize: 20,
                       shadows: [
-                        Shadow(color: Colors.black12, offset: Offset(1, 1), blurRadius: 2),
+                        Shadow(
+                          color: Colors.black12,
+                          offset: Offset(1, 1),
+                          blurRadius: 2,
+                        ),
                       ],
-                    ),
-                  ),
-                  const Text(
-                    'Öğrenci',
-                    style: TextStyle(
-                      color: Colors.white70, 
-                      fontSize: 14, 
-                      fontWeight: FontWeight.bold
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                 BoxShadow(color: Colors.black.withOpacity(0.1), offset: const Offset(0, 4), blurRadius: 4),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.stars_rounded, color: AppColors.gold, size: 24),
-                const SizedBox(width: 8),
-                Text(
-                  '${_childProfile?.totalScore ?? 0}',
-                  style: const TextStyle(
-                    color: AppColors.darkText, 
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
-              ],
-            ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      offset: const Offset(0, 4),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.stars_rounded,
+                      color: AppColors.gold,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${_childProfile?.totalScore ?? 0}',
+                      style: const TextStyle(
+                        color: AppColors.darkText,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              NeumorphicGameButton(
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                color: Colors.white,
+                shadowColor: Colors.blueGrey.shade200,
+                onPressed: () {
+                  setState(() => _isMuted = !_isMuted);
+                  SoundService.instance.setMute(_isMuted);
+                },
+                child: Icon(
+                  _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                  color: AppColors.cloudBlue,
+                ),
+              ),
+              const SizedBox(width: 12),
+              NeumorphicGameButton(
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                color: Colors.white,
+                shadowColor: Colors.blueGrey.shade200,
+                onPressed: () {
+                  if (_childProfile != null) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              ParentPanelScreen(childProfile: _childProfile!)),
+                    ).then((_) => _loadProfile());
+                  }
+                },
+                child: const Icon(Icons.settings_rounded,
+                    color: AppColors.cloudBlue, size: 24),
+              ),
+            ],
           ),
         ],
       ),
@@ -250,10 +315,16 @@ class _GameHubScreenState extends State<GameHubScreen> {
               color: color,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
-                BoxShadow(color: shadow, offset: const Offset(0, 4), blurRadius: 0),
+                BoxShadow(
+                  color: shadow,
+                  offset: const Offset(0, 4),
+                  blurRadius: 0,
+                ),
               ],
             ),
-            child: Center(child: Text(icon, style: const TextStyle(fontSize: 32))),
+            child: Center(
+              child: Text(icon, style: const TextStyle(fontSize: 32)),
+            ),
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -280,14 +351,19 @@ class _GameHubScreenState extends State<GameHubScreen> {
               ],
             ),
           ),
-          NeumorphicGameButton( // Mini button for arrow
+          NeumorphicGameButton(
+            // Mini button for arrow
             width: 40,
             height: 40,
             color: color,
             shadowColor: shadow,
             borderRadius: 12,
             onPressed: null, // Just visual
-            child: Icon(Icons.arrow_forward_rounded, color: textColor, size: 24),
+            child: Icon(
+              Icons.arrow_forward_rounded,
+              color: textColor,
+              size: 24,
+            ),
           ),
         ],
       ),

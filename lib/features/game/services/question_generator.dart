@@ -28,7 +28,6 @@ class QuestionGenerator {
         break;
       case '-':
         num1 = _getRandomInt(rule.minOperand, rule.maxOperand);
-        
         if (rule.allowNegative) {
           num2 = _getRandomInt(rule.minOperand, rule.maxOperand);
         } else {
@@ -37,7 +36,51 @@ class QuestionGenerator {
         }
         answer = num1 - num2;
         break;
-      // TODO: Add implementation for * and / when rules support them
+      case '*':
+        num1 = _getRandomInt(rule.minOperand, rule.maxOperand);
+        // İkinci operandı çok zorlaştırmamak için orta ve zorda bir tık düşük tutuyoruz
+        // ama yine de basamak sayısına sadık kalıyoruz
+        if (rule.maxOperand >= 100) {
+          num2 = _getRandomInt(2, 20); // Zor modda 3 basamak x 1-2 basamak
+        } else if (rule.maxOperand >= 10) {
+          num2 = _getRandomInt(2, 9);  // Orta modda 2 basamak x 1 basamak
+        } else {
+          num2 = _getRandomInt(rule.minOperand, rule.maxOperand);
+        }
+        answer = num1 * num2;
+        break;
+      case '/':
+        {
+          // Bölme sonucunun da kurallara uygun olması için tersten gidiyoruz
+          if (rule.maxOperand >= 100) { // Zor - 3 basamaklı sayılar
+            num2 = _getRandomInt(2, 25);
+            int quotient = _getRandomInt(10, 40);
+            num1 = num2 * quotient; 
+            // Eğer 3 basamaklı değilse zorla
+            while (num1 < 100 || num1 > 999) {
+              num2 = _getRandomInt(5, 50);
+              quotient = _getRandomInt(10, 19);
+              num1 = num2 * quotient;
+            }
+            answer = quotient;
+          } else if (rule.maxOperand >= 10) { // Orta - 2 basamaklı sayılar
+            num2 = _getRandomInt(2, 9);
+            int quotient = _getRandomInt(5, 15);
+            num1 = num2 * quotient;
+            while (num1 < 10 || num1 > 99) {
+               num2 = _getRandomInt(2, 9);
+               quotient = _getRandomInt(5, 20);
+               num1 = num2 * quotient;
+            }
+            answer = quotient;
+          } else { // Kolay - 1 basamaklı
+            num2 = _getRandomInt(1, 5);
+            int quotient = _getRandomInt(1, 5);
+            num1 = num2 * quotient;
+            answer = quotient;
+          }
+        }
+        break;
       default: // Fallback to basic addition
         num1 = _random.nextInt(10);
         num2 = _random.nextInt(10);

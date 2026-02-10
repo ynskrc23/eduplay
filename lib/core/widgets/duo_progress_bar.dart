@@ -29,7 +29,7 @@ class DuoProgressBar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.greenShadow.withOpacity(0.5),
+                      color: AppColors.greenShadow.withValues(alpha: 0.5),
                       offset: const Offset(0, 4),
                       blurRadius: 0,
                     ),
@@ -43,7 +43,7 @@ class DuoProgressBar extends StatelessWidget {
                       width: constraints.maxWidth * value * 0.8,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),

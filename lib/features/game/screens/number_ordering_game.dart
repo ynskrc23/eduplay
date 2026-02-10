@@ -129,6 +129,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
     return Scaffold(
       backgroundColor: AppColors.cloudBlue, // New Background
       body: SafeArea(
+        bottom: false,
         child: Stack(
           children: [
             // Background patterns (Clouds) could go here
@@ -151,20 +152,14 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
                         child: const Icon(Icons.arrow_back_rounded, color: AppColors.cloudBlue, size: 28),
                       ),
                       const SizedBox(width: 16),
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'SAYI SIRALAMA',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: 'Roboto', // Or custom font
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: 1.0,
-                            shadows: [
-                              Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4),
-                            ],
-                          ),
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: Colors.white,
+                                shadows: [Shadow(color: Colors.black.withOpacity(0.26), offset: const Offset(2, 2), blurRadius: 4)],
+                              ),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -194,15 +189,13 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
                 const SizedBox(height: 24),
 
                 // Question / Instruction Area
-                const Text(
+                Text(
                   'Küçükten büyüğe sırala ve kazan!',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18, 
-                    fontWeight: FontWeight.bold, 
-                    color: Colors.white,
-                    shadows: [Shadow(color: Colors.black12, offset: Offset(1, 1), blurRadius: 2)],
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.white,
+                        shadows: [Shadow(color: Colors.black.withOpacity(0.12), offset: const Offset(1, 1), blurRadius: 2)],
+                      ),
                 ),
 
                 // Error Message
@@ -347,20 +340,16 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(30),
-            boxShadow: const [
-              BoxShadow(color: Colors.black26, offset: Offset(0, 10), blurRadius: 20),
-            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'HARİKA!',
+                'MÜKEMMEL!',
                 style: TextStyle(
-                  fontSize: 36,
+                  fontSize: 32,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.leafGreen,
-                  letterSpacing: 1.5,
+                  color: AppColors.orange,
                 ),
               ),
               const SizedBox(height: 24),
@@ -375,19 +364,23 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.darkText,
+                  color: AppColors.gray,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 48),
               NeumorphicGameButton(
-                color: AppColors.sunYellow,
-                shadowColor: AppColors.sunYellowShadow,
+                color: AppColors.orange,
+                shadowColor: AppColors.orangeShadow,
                 width: 200,
                 height: 60,
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
-                  'ANA MENÜ',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                  'DEVAM ET',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ],
@@ -396,6 +389,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
       ),
     );
   }
+
 
   Widget _buildNumberChip(int n, {bool isActive = false, bool isFeedback = false}) {
     // If active (placed in slot), maybe show it differently? 
@@ -438,7 +432,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
           width: 20,
           height: 20,
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
         ),

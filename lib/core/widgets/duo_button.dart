@@ -64,7 +64,7 @@ class _DuoButtonState extends State<DuoButton> {
                   color: widget.color,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     width: 1,
                   ),
                 ),
