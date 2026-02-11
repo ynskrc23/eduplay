@@ -267,7 +267,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
                       height: 12,
                       child: LinearProgressIndicator(
                         value: _round / _totalRounds,
-                        backgroundColor: Colors.white.withOpacity(0.3),
+                        backgroundColor: Colors.white.withValues(alpha: 0.3),
                         valueColor: const AlwaysStoppedAnimation<Color>(
                           AppColors.sunYellow,
                         ),
@@ -290,7 +290,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           offset: const Offset(0, 8),
                           blurRadius: 10,
                         ),
@@ -346,7 +346,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 10,
                               offset: const Offset(0, 6),
                             ),

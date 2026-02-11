@@ -1,12 +1,8 @@
-import 'dart:math';
-import '../../../data/repositories/child_repository.dart';
-import '../../../data/models/child_profile.dart';
 
 class GamificationService {
   static final GamificationService instance = GamificationService._();
   GamificationService._();
 
-  final ChildRepository _childRepo = ChildRepository();
 
   // Points Mapping
   static const int pointsPerCorrect = 10;

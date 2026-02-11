@@ -19,16 +19,16 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  runApp(const EduPlayApp());
+  runApp(const MatematiKoyApp());
 }
 
-class EduPlayApp extends StatelessWidget {
-  const EduPlayApp({super.key});
+class MatematiKoyApp extends StatelessWidget {
+  const MatematiKoyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'EduPlay Matematik',
+      title: 'MatematiKöy',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       home: const BootScreen(),
@@ -110,7 +110,7 @@ class _BootScreenState extends State<BootScreen> {
             ),
             const SizedBox(height: 24),
             const Text(
-              "EduPlay",
+              "MatematiKöy",
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,

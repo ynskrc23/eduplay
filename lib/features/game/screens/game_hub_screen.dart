@@ -71,7 +71,7 @@ class _GameHubScreenState extends State<GameHubScreen> {
                             letterSpacing: 1.2,
                             shadows: [
                               Shadow(
-                                color: Colors.black.withOpacity(0.2),
+                                color: Colors.black.withValues(alpha: 0.2),
                                 offset: const Offset(2, 2),
                                 blurRadius: 4,
                               ),
@@ -175,7 +175,7 @@ class _GameHubScreenState extends State<GameHubScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -221,7 +221,7 @@ class _GameHubScreenState extends State<GameHubScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       offset: const Offset(0, 4),
                       blurRadius: 4,
                     ),

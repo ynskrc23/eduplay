@@ -206,7 +206,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 color: Colors.white,
-                                shadows: [Shadow(color: Colors.black.withOpacity(0.26), offset: const Offset(2, 2), blurRadius: 4)],
+                                shadows: [Shadow(color: Colors.black.withValues(alpha: 0.26), offset: const Offset(2, 2), blurRadius: 4)],
                               ),
                         ),
                       ),
@@ -227,7 +227,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
                       height: 12,
                       child: LinearProgressIndicator(
                         value: _round / _totalRounds,
-                        backgroundColor: Colors.white.withOpacity(0.3),
+                        backgroundColor: Colors.white.withValues(alpha: 0.3),
                         valueColor: const AlwaysStoppedAnimation<Color>(AppColors.sunYellow),
                       ),
                     ),
@@ -242,7 +242,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.white,
-                        shadows: [Shadow(color: Colors.black.withOpacity(0.12), offset: const Offset(1, 1), blurRadius: 2)],
+                        shadows: [Shadow(color: Colors.black.withValues(alpha: 0.12), offset: const Offset(1, 1), blurRadius: 2)],
                       ),
                 ),
 
@@ -284,9 +284,9 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
                           margin: const EdgeInsets.symmetric(horizontal: 24),
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2), // Frosted glass look
+                            color: Colors.white.withValues(alpha: 0.2), // Frosted glass look
                             borderRadius: BorderRadius.circular(30),
-                            border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
                           ),
                           child: Wrap(
                             spacing: 12,
@@ -467,9 +467,9 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
       width: 70,
       height: 70,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.1), // Inner shadow/indent effect
+        color: Colors.black.withValues(alpha: 0.1), // Inner shadow/indent effect
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.2), width: 2),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
         boxShadow: const [
            // Inner shadow simulation via inset is hard in Flutter without package, 
            // but transparent black usually does the job of "hole"

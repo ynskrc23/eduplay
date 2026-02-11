@@ -50,7 +50,7 @@ class ChildRepository {
 
   Future<void> deleteDatabaseForDev() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'eduplay.db');
+    final path = join(dbPath, 'matematikoy.db');
     await deleteDatabase(path);
   }
 

@@ -12,13 +12,13 @@ class DatabaseHelper {
   Future<Database> get database async {
     if (_database != null) return _database!;
 
-    _database = await _initDB('eduplay.db');
+    _database = await _initDB('matematikoy.db');
     return _database!;
   }
 
   Future<void> resetDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'eduplay.db');
+    final path = join(dbPath, 'matematikoy.db');
     
     if (_database != null) {
       await _database!.close();

@@ -4,7 +4,6 @@ import '../../../data/repositories/child_repository.dart';
 import '../../../core/app_colors.dart';
 import '../../../core/widgets/duo_button.dart';
 import '../../../core/widgets/mascot_guide.dart';
-import '../../game/screens/game_page.dart';
 import '../../game/screens/level_map_screen.dart';
 import '../../game/screens/game_hub_screen.dart';
 

@@ -468,7 +468,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                color: Colors.white,
                shape: BoxShape.circle,
                boxShadow: [
-                 BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 30, offset: const Offset(0, 10)),
+                 BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 30, offset: const Offset(0, 10)),
                ],
              ),
              child: Text(
@@ -504,7 +504,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 shadows: [Shadow(color: Colors.black12, offset: Offset(1,1), blurRadius: 2)],
               ),
             ),
