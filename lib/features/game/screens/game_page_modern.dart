@@ -528,7 +528,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                     ? Text(
                         '$_num1 $_operator $_num2',
                         style: const TextStyle(
-                          fontSize: 80,
+                          fontSize: 70,
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
                           letterSpacing: 2,
@@ -541,7 +541,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                           Text(
                             '$_num1',
                             style: const TextStyle(
-                              fontSize: 90,
+                              fontSize: 75,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
                               height: 1.1,
@@ -554,7 +554,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                               Text(
                                 '$_operator ',
                                 style: const TextStyle(
-                                  fontSize: 70,
+                                  fontSize: 60,
                                   fontWeight: FontWeight.w900,
                                   color: AppColors.sunYellow,
                                   shadows: [Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4)],
@@ -563,7 +563,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                               Text(
                                 '$_num2',
                                 style: const TextStyle(
-                                  fontSize: 90,
+                                  fontSize: 75,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,
                                   height: 1.1,
@@ -573,9 +573,9 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                             ],
                           ),
                           Container(
-                            margin: const EdgeInsets.only(top: 12),
-                            height: 8,
-                            width: 180,
+                            margin: const EdgeInsets.only(top: 10),
+                            height: 6,
+                            width: 140,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(4),
