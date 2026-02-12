@@ -178,15 +178,8 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
     
     final question = _questionGenerator.generate(rule);
     
-    // Generate multiple choice options
-    List<int> options = [question.answer];
-    while (options.length < 4) {
-      int wrongAnswer = question.answer + _random.nextInt(20) - 10;
-      if (wrongAnswer > 0 && !options.contains(wrongAnswer)) {
-        options.add(wrongAnswer);
-      }
-    }
-    options.shuffle();
+    // Akıllı şık üretme (Son basamak benzerliği içeren yanıltıcılarla)
+    List<int> options = _questionGenerator.generateOptions(question, 4);
     
     setState(() {
       _num1 = question.num1;
@@ -425,7 +418,6 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
               ],
             ),
           ),
-          
           if (!_isFreeMode)
             Container(
                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -440,7 +432,9 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                  'SEVİYE ${_currentLevelIndex + 1}',
                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                ),
-            ),
+            )
+          else
+            const SizedBox(width: 60), // Balances Back Button (48) + SizedBox (12)
         ],
       ),
     );
@@ -504,52 +498,97 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            const SizedBox(height: 20),
-            
-            // Question Text Direct on Background (Design Style)
-            Text(
-              'Ne kadar eder?',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white.withValues(alpha: 0.9),
-                shadows: [Shadow(color: Colors.black12, offset: Offset(1,1), blurRadius: 2)],
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Big Question
-            SizedBox(
+            // Main Question Stage (Redesigned for a cleaner look)
+            Container(
               width: double.infinity,
-              height: 100,
-              child: Center(
-                child: AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: 1.0 + (_pulseController.value * 0.05),
-                      child: child,
-                    );
-                  },
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      '$_num1 $_operator $_num2',
-                      style: const TextStyle(
-                        fontSize: 70,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(color: Colors.black26, offset: Offset(4, 4), blurRadius: 0), // Hard shadow
+              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(40),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: AnimatedBuilder(
+                animation: _pulseController,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: 1.0 + (_pulseController.value * 0.03),
+                    child: child,
+                  );
+                },
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: (_operator == '*' || _operator == '/') 
+                    ? Text(
+                        '$_num1 $_operator $_num2',
+                        style: const TextStyle(
+                          fontSize: 80,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 2,
+                          shadows: [Shadow(color: Colors.black26, offset: Offset(4, 4), blurRadius: 8)],
+                        ),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '$_num1',
+                            style: const TextStyle(
+                              fontSize: 90,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              height: 1.1,
+                              shadows: [Shadow(color: Colors.black26, offset: Offset(4, 4), blurRadius: 8)],
+                            ),
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '$_operator ',
+                                style: const TextStyle(
+                                  fontSize: 70,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.sunYellow,
+                                  shadows: [Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4)],
+                                ),
+                              ),
+                              Text(
+                                '$_num2',
+                                style: const TextStyle(
+                                  fontSize: 90,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  height: 1.1,
+                                  shadows: [Shadow(color: Colors.black26, offset: Offset(4, 4), blurRadius: 8)],
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            margin: const EdgeInsets.only(top: 12),
+                            height: 8,
+                            width: 180,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(4),
+                              boxShadow: const [BoxShadow(color: Colors.white30, blurRadius: 10, spreadRadius: 2)],
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                  ),
                 ),
               ),
             ),
             
-            const SizedBox(height: 60),
+            const SizedBox(height: 40),
             
             // Grid of Answers
             if (_answerOptions.isEmpty)
@@ -575,7 +614,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                 ],
               ),
               
-              const SizedBox(height: 60),
+              const SizedBox(height: 40), // Mesafeyi azalttık (Cevaplara yaklaştırdık)
 
             if (_feedbackMessage.isNotEmpty && _selectedAnswer != _answer)
               Padding(

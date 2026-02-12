@@ -628,16 +628,59 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
         child: Column(
           children: [
             Shimmer.fromColors(
-              baseColor: AppColors.textMain,
+              baseColor: AppColors.blueShadow,
               highlightColor: AppColors.blue,
-              child: Text(
-                '$_num1 $_operator $_num2',
-                style: const TextStyle(
-                  fontSize: 72,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 4,
-                ),
-              ),
+              child: (_operator == '*' || _operator == '/') 
+                ? Text(
+                    '$_num1 $_operator $_num2',
+                    style: const TextStyle(
+                      fontSize: 72,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 4,
+                    ),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '$_num1',
+                        style: const TextStyle(
+                          fontSize: 72,
+                          fontWeight: FontWeight.w900,
+                          height: 1.1,
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '$_operator ',
+                            style: const TextStyle(
+                              fontSize: 50,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          Text(
+                            '$_num2',
+                            style: const TextStyle(
+                              fontSize: 72,
+                              fontWeight: FontWeight.w900,
+                              height: 1.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 8),
+                        height: 6,
+                        width: 140,
+                        decoration: BoxDecoration(
+                          color: AppColors.blueShadow,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ],
+                  ),
             ),
             const SizedBox(height: 24),
             

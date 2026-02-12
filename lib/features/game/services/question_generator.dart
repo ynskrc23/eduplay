@@ -91,6 +91,45 @@ class QuestionGenerator {
     return Question(num1, num2, op, answer);
   }
 
+  List<int> generateOptions(Question question, int count) {
+    Set<int> options = {question.answer};
+    
+    // 1. Strateji: Cevap 2 basamaklı ve üzeri ise (ve bölme değilse) 
+    // son basamağı aynı olan yakın bir yanıltıcı ekle (Örn: 120 -> 130 veya 110)
+    if (question.answer >= 10 && question.operation != '/') {
+      int offset = 10; // Tam olarak 10 fark (en yakın benzerlik)
+      int wrong = _random.nextBool() ? question.answer + offset : question.answer - offset;
+      
+      if (wrong > 0 && !options.contains(wrong)) {
+        options.add(wrong);
+      }
+    }
+
+    // 2. Geri kalan şıkları birbirine çok yakın (+/- 10 aralığında) sayılardan tamamla
+    int attempts = 0;
+    while (options.length < count && attempts < 50) {
+      attempts++;
+      // -10 ile +10 aralığında rastgele sapma
+      int offset = _random.nextInt(21) - 10; 
+      if (offset == 0) continue;
+      
+      int wrong = question.answer + offset;
+      if (wrong > 0 && !options.contains(wrong)) {
+        options.add(wrong);
+      }
+    }
+
+    // Nadir durumlarda hala dolmadıysa sıralı ekle
+    for (int i = 1; options.length < count; i++) {
+      int nextWrong = (question.answer + i > 0) ? question.answer + i : question.answer - i;
+      options.add(nextWrong);
+    }
+
+    List<int> result = options.toList();
+    result.shuffle();
+    return result;
+  }
+
   int _getRandomInt(int min, int max) {
     if (min >= max) return min;
     return min + _random.nextInt(max - min + 1);

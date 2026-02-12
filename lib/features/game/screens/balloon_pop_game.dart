@@ -84,10 +84,20 @@ class _BalloonPopGameState extends State<BalloonPopGame>
   void _generateRound() {
     _targetNumber = _random.nextInt(15) + 1;
     Set<int> ops = {_targetNumber};
-    // 4 benzersiz sayı oluştur (Sayılar arası mesafeyi artırmak için balon sayısını azalttık)
+    // 4 benzersiz sayı oluştur (Akıllı çeldiriciler eklendi)
     while (ops.length < 4) {
-      int nextVal = _random.nextInt(30) + 1;
-      if (nextVal != _targetNumber) ops.add(nextVal);
+      int nextVal;
+      // İlk yanıltıcıyı mutlaka hedefle aynı son basamağa sahip olacak şekilde seç (12 ise 22 gibi)
+      if (ops.length == 1) {
+        int tens = _random.nextInt(3); // 0, 10, 20 gibi onluklar
+        nextVal = (tens * 10) + (_targetNumber % 10);
+      } else {
+        nextVal = _random.nextInt(30) + 1;
+      }
+      
+      if (nextVal != _targetNumber && nextVal > 0 && !ops.contains(nextVal)) {
+        ops.add(nextVal);
+      }
     }
 
     List<int> numbers = ops.toList()..shuffle();
