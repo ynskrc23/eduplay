@@ -573,9 +573,9 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                             ],
                           ),
                           Container(
-                            margin: const EdgeInsets.only(top: 10),
-                            height: 6,
-                            width: 140,
+                            margin: const EdgeInsets.only(top: 12),
+                            height: 8,
+                            width: 180,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(4),
