@@ -178,15 +178,8 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
     
     final question = _questionGenerator.generate(rule);
     
-    // Generate multiple choice options
-    List<int> options = [question.answer];
-    while (options.length < 4) {
-      int wrongAnswer = question.answer + _random.nextInt(20) - 10;
-      if (wrongAnswer > 0 && !options.contains(wrongAnswer)) {
-        options.add(wrongAnswer);
-      }
-    }
-    options.shuffle();
+    // Akıllı şık üretme (Son basamak benzerliği içeren yanıltıcılarla)
+    List<int> options = _questionGenerator.generateOptions(question, 4);
     
     setState(() {
       _num1 = question.num1;
