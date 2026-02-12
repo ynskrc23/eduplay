@@ -4,7 +4,7 @@ import 'app_colors.dart';
 
 class AppTheme {
   static ThemeData light() {
-    final baseText = GoogleFonts.fredokaTextTheme();
+    final baseText = GoogleFonts.nunitoTextTheme();
 
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.cloudBlue,

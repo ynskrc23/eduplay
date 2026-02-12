@@ -111,7 +111,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
           color: availableColors[idx % availableColors.length],
           x: (idx + 0.5) * segmentWidth, // Ekran geneline daha dengeli yayılım
           y: 1.2, // Start from bottom
-          speed: 0.003 + (_random.nextDouble() * 0.0015), // Hız düşürüldü
+          speed: 0.008 + (_random.nextDouble() * 0.004), // Çocuklar için ideal hıza ayarlandı
         );
       }).toList();
       _shownWrongOverlayThisRound = false;
@@ -151,7 +151,8 @@ class _BalloonPopGameState extends State<BalloonPopGame>
 }
 
   void _repeatRound() {
-    Future.delayed(const Duration(milliseconds: 500), () {
+    // Gecikmeyi çok azalttık (100ms), böylece bekletmeden tekrar başlar
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
         setState(() {
           _attempt++;
@@ -443,15 +444,21 @@ class _BalloonPopGameState extends State<BalloonPopGame>
     return TweenAnimationBuilder<double>(
       key: ValueKey('${balloon.number}_${balloon.x}_$_attempt'),
       tween: Tween(begin: 1.2, end: -0.3),
-      duration: Duration(milliseconds: (1 / balloon.speed).toInt() * 80),
+      duration: Duration(milliseconds: (1 / balloon.speed).toInt() * 100),
       onEnd: () {
         if (!balloon.isPopped && mounted) {
           setState(() {
             balloon.isMissed = true;
           });
+          // Hedef balon kaçtıysa (tıklanmadıysa), diğerlerini beklemeden hemen turu tekrarla
+          if (balloon.number == _targetNumber) {
+            _repeatRound();
+            return;
+          }
+
           // Check if all balloons are gone
           if (_balloons.every((b) => b.isPopped || b.isMissed)) {
-            // Birisi bile doğru patlatılmadıysa (hepsi kaçtı veya yanlış patladı)
+            // Birisi bile doğru patlatılmadıysa (hepsi kaçtı)
             bool isCorrectPopped = _balloons.any((b) => b.isPopped && b.number == _targetNumber);
             if (!isCorrectPopped) {
               _repeatRound();
@@ -518,19 +525,22 @@ class _BalloonPopGameState extends State<BalloonPopGame>
                 ),
               ),
               // Number
-              Text(
-                '${balloon.number}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black26,
-                      offset: Offset(1, 1),
-                      blurRadius: 2,
-                    ),
-                  ],
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  '${balloon.number}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black26,
+                        offset: Offset(1, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

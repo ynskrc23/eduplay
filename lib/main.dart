@@ -31,6 +31,14 @@ class MatematiKoyApp extends StatelessWidget {
       title: 'MatematiKöy',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.noScaling,
+          ),
+          child: child!,
+        );
+      },
       home: const BootScreen(),
     );
   }

@@ -511,23 +511,32 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
             const SizedBox(height: 20),
             
             // Big Question
-            AnimatedBuilder(
-              animation: _pulseController,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: 1.0 + (_pulseController.value * 0.05),
-                  child: child,
-                );
-              },
-              child: Text(
-                '$_num1 $_operator $_num2',
-                style: const TextStyle(
-                  fontSize: 80,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(color: Colors.black26, offset: Offset(4, 4), blurRadius: 0), // Hard shadow
-                  ],
+            SizedBox(
+              width: double.infinity,
+              height: 100,
+              child: Center(
+                child: AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: 1.0 + (_pulseController.value * 0.05),
+                      child: child,
+                    );
+                  },
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '$_num1 $_operator $_num2',
+                      style: const TextStyle(
+                        fontSize: 70,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(color: Colors.black26, offset: Offset(4, 4), blurRadius: 0), // Hard shadow
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -621,13 +630,16 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
           _selectedAnswer = option;
         });
       },
-      child: Text(
-        '$option',
-        style: const TextStyle(
-          fontSize: 40,
-          fontWeight: FontWeight.w900,
-          color: Colors.white, // In design it's white or dark grey
-          shadows: [Shadow(color: Colors.black26, offset: Offset(2,2), blurRadius: 2)],
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          '$option',
+          style: const TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
+            color: Colors.white, // In design it's white or dark grey
+            shadows: [Shadow(color: Colors.black26, offset: Offset(2,2), blurRadius: 2)],
+          ),
         ),
       ),
     );

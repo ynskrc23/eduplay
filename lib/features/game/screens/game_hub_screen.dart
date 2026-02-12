@@ -358,7 +358,7 @@ class _GameHubScreenState extends State<GameHubScreen> {
             color: color,
             shadowColor: shadow,
             borderRadius: 12,
-            onPressed: null, // Just visual
+            onPressed: onTap, // Mini button for arrow
             child: Icon(
               Icons.arrow_forward_rounded,
               color: textColor,

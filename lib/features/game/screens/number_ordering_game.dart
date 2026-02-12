@@ -448,15 +448,18 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
       color: _getNumberColor(n),
       shadowColor: _getNumberShadowColor(n),
       onPressed: null, // It's draggable
-      child: Text(
-        '$n',
-        style: TextStyle(
-          fontSize: isFeedback ? 32 : 28,
-          fontWeight: FontWeight.w900,
-          color: Colors.white,
-          shadows: const [
-            Shadow(color: Colors.black26, offset: Offset(1, 1), blurRadius: 2),
-          ],
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          '$n',
+          style: TextStyle(
+            fontSize: isFeedback ? 32 : 28,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            shadows: const [
+              Shadow(color: Colors.black26, offset: Offset(1, 1), blurRadius: 2),
+            ],
+          ),
         ),
       ),
     );
