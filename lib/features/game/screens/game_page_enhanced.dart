@@ -341,18 +341,23 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
                           const SizedBox(width: 16),
                           // Title
                           const Expanded(
-                            child: Text(
-                              'MATEMATİK SAVAŞI',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontSize: 24,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: 1.0,
-                                shadows: [
-                                  Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4),
-                                ],
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'MATEMATİK SAVAŞI',
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                softWrap: false,
+                                style: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 1.0,
+                                  shadows: [
+                                    Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4),
+                                  ],
+                                ),
                               ),
                             ),
                           ),

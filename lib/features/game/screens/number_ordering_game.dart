@@ -201,13 +201,17 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: Text(
-                          'SAYI SIRALAMA',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                color: Colors.white,
-                                shadows: [Shadow(color: Colors.black.withValues(alpha: 0.26), offset: const Offset(2, 2), blurRadius: 4)],
-                              ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'SAYI SIRALAMA',
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                  color: Colors.white,
+                                  shadows: [Shadow(color: Colors.black.withValues(alpha: 0.26), offset: const Offset(2, 2), blurRadius: 4)],
+                                ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),

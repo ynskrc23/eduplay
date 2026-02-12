@@ -387,17 +387,25 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
           Expanded(
             child: Column(
               children: [
-                Text(
-                  _isFreeMode ? _headerTitleForSelection(widget.operation!, widget.difficulty!) : 'MATEMATİK OYUNU',
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: 1.0,
-                    shadows: [
-                      Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4),
-                    ],
+                Container(
+                  width: double.infinity,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      _isFreeMode ? _headerTitleForSelection(widget.operation!, widget.difficulty!) : 'MATEMATİK SAVAŞI',
+                      maxLines: 1,
+                      softWrap: false,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 1.0,
+                        shadows: [
+                          Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
                 ClipRRect(
