@@ -38,50 +38,6 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
       _childProfile = profile;
       _isLoading = false;
     });
-    _checkDailyReward();
-  }
-
-  Future<void> _checkDailyReward() async {
-    final reward = await _childRepo.checkAndClaimDailyReward(widget.childId);
-    if (reward != null && mounted) {
-      final profile = await _childRepo.getProfileById(widget.childId);
-      setState(() {
-        _childProfile = profile;
-      });
-
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Text('🎁 GÜNLÜK ÖDÜL!', 
-            textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: AppColors.orange),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.card_giftcard, size: 80, color: Colors.pink),
-              const SizedBox(height: 16),
-              Text(
-                'Bugün giriş yaptığın için $reward puan kazandın!',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkText),
-              ),
-            ],
-          ),
-          actions: [
-            Center(
-              child: NeumorphicGameButton(
-                color: AppColors.leafGreen,
-                shadowColor: AppColors.leafGreenShadow,
-                onPressed: () => Navigator.pop(context),
-                child: Text('YAŞASIN!', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900)),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
   }
 
   @override

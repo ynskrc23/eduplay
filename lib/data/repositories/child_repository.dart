@@ -72,27 +72,4 @@ class ChildRepository {
     );
   }
 
-  Future<int?> checkAndClaimDailyReward(int childId) async {
-    final db = await _dbHelper.database;
-    final today = DateTime.now().toIso8601String().split('T')[0];
-    
-    final result = await db.query(
-      'daily_reward',
-      where: 'child_id = ? AND reward_date = ?',
-      whereArgs: [childId, today],
-    );
-
-    if (result.isEmpty) {
-      const reward = 5; 
-      await db.insert('daily_reward', {
-        'child_id': childId,
-        'reward_date': today,
-        'reward_type': 'POINTS',
-        'reward_value': reward,
-      });
-      await updateScore(childId, reward);
-      return reward;
-    }
-    return null;
-  }
 }
