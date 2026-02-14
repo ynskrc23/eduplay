@@ -4,6 +4,7 @@ import 'package:confetti/confetti.dart';
 import '../../../core/app_colors.dart';
 import '../../../core/widgets/neumorphic_game_button.dart';
 import '../../../core/services/sound_service.dart';
+import '../../../core/services/admob_service.dart';
 import '../../../core/widgets/feedback_overlay.dart';
 import '../../../data/models/game_session.dart';
 import '../../../data/repositories/game_session_repository.dart';
@@ -233,7 +234,10 @@ class _BalloonPopGameState extends State<BalloonPopGame>
                         color: Colors.white,
                         shadowColor: Colors.blueGrey.shade200,
                         padding: EdgeInsets.zero,
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () {
+                          AdMobService().onGameCompleted();
+                          Navigator.pop(context);
+                        },
                         child: const Icon(
                           Icons.arrow_back_rounded,
                           color: AppColors.cloudBlue,

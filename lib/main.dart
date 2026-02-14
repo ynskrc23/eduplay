@@ -7,6 +7,7 @@ import 'features/game/screens/game_hub_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/app_theme.dart';
+import 'core/services/admob_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,10 @@ void main() async {
   // await DatabaseHelper.instance.resetDatabase();
 
   await initializeDateFormatting('tr_TR', null);
+  
+  // AdMob SDK'yı başlat
+  await AdMobService().initialize();
+  
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
