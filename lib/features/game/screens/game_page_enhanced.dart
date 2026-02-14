@@ -14,6 +14,7 @@ import '../../../data/models/child_profile.dart';
 import '../../../data/models/game_session.dart';
 import '../services/question_generator.dart';
 import '../../../core/services/sound_service.dart';
+import '../../../core/services/admob_service.dart';
 import '../../../core/app_colors.dart';
 import '../../../core/widgets/duo_button.dart';
 import '../../../core/widgets/neumorphic_game_button.dart';
@@ -283,6 +284,9 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
         _wrongCount,
       );
       _currentSessionId = null;
+      
+      // Oyun tamamlandı, reklam göster (her 3 oyunda bir)
+      AdMobService().onGameCompleted();
     }
 
     if (mounted) {
