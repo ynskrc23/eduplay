@@ -1,4 +1,4 @@
-package com.example.eduplay
+package com.karaca.matematikoy
 
 import io.flutter.embedding.android.FlutterActivity
 
