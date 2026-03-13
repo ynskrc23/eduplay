@@ -401,21 +401,12 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'MÜKEMMEL!',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.orange,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
                 '🎉',
                 style: TextStyle(fontSize: 80),
               ),
               const SizedBox(height: 24),
               const Text(
-                'Tüm sayıları ustalıkla sıraladın!',
+                'Harika iş çıkardın, tebrikler!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,

@@ -425,8 +425,8 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
         return _buildLevelUpCard();
       case GameStatus.won:
         return _buildResultCard(
-          title: 'Tebrikler!',
-          message: 'Tüm soruları bildin ve bu bölümü fethettin! 👑',
+          title: '',
+          message: 'Harika iş çıkardın, tebrikler!',
           icon: Icons.emoji_events_rounded,
           color: Colors.amber,
         );
@@ -738,8 +738,8 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
 
   Widget _buildLevelUpCard() {
     return _buildResultCard(
-      title: 'MÜKEMMEL!',
-      message: 'Canavarı yendin ve zafer kazandın!',
+      title: '',
+      message: 'Harika iş çıkardın, tebrikler!',
       icon: Icons.emoji_events_rounded,
       color: AppColors.orange,
     );
@@ -751,7 +751,7 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
     required IconData icon,
     required Color color,
   }) {
-    bool isWin = title == 'Tebrikler!' || title == 'MÜKEMMEL!';
+    bool isWin = title.isEmpty || title == 'MÜKEMMEL!';
     
     return Container(
       color: Colors.black54, // Overlay
@@ -766,17 +766,19 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                title.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: isWin ? AppColors.orange : AppColors.berryRed,
+              if (title.isNotEmpty) ...[
+                Text(
+                  title.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: isWin ? AppColors.orange : AppColors.berryRed,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
+              ],
               Text(
-                isWin ? '🏆' : '💪',
+                isWin ? '🎉' : '💪',
                 style: const TextStyle(fontSize: 80),
               ),
               const SizedBox(height: 24),

@@ -455,9 +455,9 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
       case GameStatus.won:
       case GameStatus.lost:
         return _buildResultCard(
-          title: _status == GameStatus.won ? 'Tebrikler!' : 'Yeniden Dene',
+          title: _status == GameStatus.won ? '' : 'Yeniden Dene',
           message: _status == GameStatus.won 
-              ? 'Bölümü fethettin! 👑' 
+              ? 'Harika iş çıkardın, tebrikler!' 
               : 'Hadi bir daha deneyelim!',
         );
     }
@@ -709,15 +709,17 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                title.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.orange,
+              if (title.isNotEmpty) ...[
+                Text(
+                  title.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.orange,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
+              ],
               const Text('🎉', style: TextStyle(fontSize: 80)),
               const SizedBox(height: 24),
               Text(
@@ -755,14 +757,14 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
   Widget _buildLevelUpCard() {
     if (_isFreeMode) {
       return _buildResultCard(
-        title: 'MÜKEMMEL!',
-        message: 'Seçtiğin modu başarıyla tamamladın!',
+        title: '',
+        message: 'Harika iş çıkardın, tebrikler!',
       );
     }
 
-    String title = _isNextLevelUnlocked ? 'MÜKEMMEL!' : 'BÖLÜM BİTTİ!';
+    String title = _isNextLevelUnlocked ? '' : 'BÖLÜM BİTTİ!';
     String message = _isNextLevelUnlocked 
-        ? 'Canavarı yendin ve zafer kazandın!' 
+        ? 'Harika iş çıkardın, tebrikler!' 
         : 'Sıradaki seviye için biraz daha puan toplamalısın!';
     
     if (_lastLevelGift > 0) {
@@ -782,17 +784,19 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.orange,
+              if (title.isNotEmpty) ...[
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.orange,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
+              ],
               Text(
-                _isNextLevelUnlocked ? '🏆' : '💪',
+                _isNextLevelUnlocked ? '🎉' : '💪',
                 style: const TextStyle(fontSize: 80),
               ),
               const SizedBox(height: 24),

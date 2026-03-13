@@ -413,19 +413,10 @@ class _BalloonPopGameState extends State<BalloonPopGame>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'MÜKEMMEL!',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.orange,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text('🎈', style: TextStyle(fontSize: 80)),
+              const Text('🎉', style: TextStyle(fontSize: 80)),
               const SizedBox(height: 24),
               const Text(
-                'Hepsini ustalıkla patlattın!',
+                'Harika iş çıkardın, tebrikler!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
