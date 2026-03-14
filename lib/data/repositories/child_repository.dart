@@ -62,6 +62,16 @@ class ChildRepository {
     );
   }
 
+  Future<void> updateLives(int childId, int newLives) async {
+    final db = await _dbHelper.database;
+    await db.update(
+      'child_profile',
+      {'lives': newLives},
+      where: 'id = ?',
+      whereArgs: [childId],
+    );
+  }
+
   Future<void> updateLevel(int childId, int newLevelIndex) async {
     final db = await _dbHelper.database;
     await db.update(

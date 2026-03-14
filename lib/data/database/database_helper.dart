@@ -35,13 +35,17 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5, // Sürüm 5'e yükseltildi (lives kolonu için)
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           // If we are at version 1, we need to add the new levels.
           // For simplicity in this dev environment, we can re-run the creation logic or specific seeds.
           // But usually, deleting and re-installing is cleaner for seed changes.
+        }
+        if (oldVersion < 5) {
+          // 'lives' kolonunu ekle (can sistemi, varsayılan 5 can)
+          await db.execute('ALTER TABLE child_profile ADD COLUMN lives INTEGER NOT NULL DEFAULT 5');
         }
       },
     );
@@ -63,6 +67,7 @@ class DatabaseHelper {
         avatar_id $textType,
         current_level $intType,
         total_score $intType,
+        lives $intType DEFAULT 5,
         created_at $textType
       )
     ''');

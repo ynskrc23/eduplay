@@ -5,6 +5,7 @@ class ChildProfile {
   final String avatarId;
   final int currentLevel;
   final int totalScore;
+  final int lives; // NEW: Can (Kalp) Sistemi
   final DateTime createdAt;
 
   ChildProfile({
@@ -14,6 +15,7 @@ class ChildProfile {
     required this.avatarId,
     this.currentLevel = 0,
     this.totalScore = 0,
+    this.lives = 5, // Standart 5 can ile başlar
     required this.createdAt,
   });
 
@@ -24,6 +26,7 @@ class ChildProfile {
         'avatar_id': avatarId,
         'current_level': currentLevel,
         'total_score': totalScore,
+        'lives': lives, // NEW: DB'ye kaydet
         'created_at': createdAt.toIso8601String(),
       };
 
@@ -34,6 +37,7 @@ class ChildProfile {
         avatarId: json['avatar_id'] as String,
         currentLevel: json['current_level'] as int,
         totalScore: json['total_score'] as int,
+        lives: (json['lives'] as int?) ?? 5, // NEW: DB'den oku, yoksa 5
         createdAt: DateTime.parse(json['created_at'] as String),
       );
 
@@ -44,6 +48,7 @@ class ChildProfile {
     String? avatarId,
     int? currentLevel,
     int? totalScore,
+    int? lives,
     DateTime? createdAt,
   }) {
     return ChildProfile(
@@ -53,6 +58,7 @@ class ChildProfile {
       avatarId: avatarId ?? this.avatarId,
       currentLevel: currentLevel ?? this.currentLevel,
       totalScore: totalScore ?? this.totalScore,
+      lives: lives ?? this.lives,
       createdAt: createdAt ?? this.createdAt,
     );
   }

@@ -152,6 +152,12 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
         return;
     }
 
+    // NEW: Oyuna başlamadan önce kalp sayısını kontrol et
+    if ((_childProfile?.lives ?? 0) <= 0) {
+      _showOutOfLivesDialog();
+      return; // Kalp yoksa oyunu başlatma ve welcome ekranında kal
+    }
+
     if (!_isFreeMode && _game != null && _childProfile != null) {
       final session = GameSession(
         childId: _childProfile!.id!,
@@ -232,9 +238,22 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
         _feedbackMessage = "Cevap bu değil, tekrar dene! 💪";
         SoundService.instance.playWrong();
         
+        // NEW: Kalp Sistemi
+        if (_childProfile != null) {
+          int updatedLives = _childProfile!.lives - 1;
+          if (updatedLives < 0) updatedLives = 0;
+          _childProfile = _childProfile!.copyWith(lives: updatedLives);
+          _childRepo.updateLives(widget.childId, updatedLives);
+          
+          if (updatedLives == 0) {
+            _showOutOfLivesDialog();
+            return; // Eğer kalp 0'sa reklam sorma diyalogu açılacak kapatılmamalı
+          }
+        }
+        
         // Hatalı cevapta soruyu atlamak yerine tekrar denemesi için geri bildirimi kapatıyoruz
         Future.delayed(const Duration(milliseconds: 1500), () {
-           if (mounted) {
+           if (mounted && (_childProfile?.lives ?? 0) > 0) {
              setState(() {
                _showFeedback = false;
                _selectedAnswer = null;
@@ -422,25 +441,138 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
               ],
             ),
           ),
-          if (!_isFreeMode)
-            Container(
-               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-               decoration: BoxDecoration(
-                 color: AppColors.orange,
-                 borderRadius: BorderRadius.circular(20),
-                 boxShadow: [
-                   BoxShadow(color: AppColors.orangeShadow, offset: const Offset(0, 4), blurRadius: 0),
-                 ],
-               ),
-               child: Text(
-                 'SEVİYE ${_currentLevelIndex + 1}',
-                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-               ),
-            )
-          else
-            const SizedBox(width: 60), // Balances Back Button (48) + SizedBox (12)
+          const SizedBox(width: 8),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Kalp göstergesi
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0,2))],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('${_childProfile?.lives ?? 0}', style: const TextStyle(color: AppColors.berryRed, fontWeight: FontWeight.w900, fontSize: 16)),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.favorite, color: AppColors.berryRed, size: 20),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 6),
+              if (!_isFreeMode)
+                Container(
+                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                   decoration: BoxDecoration(
+                     color: AppColors.orange,
+                     borderRadius: BorderRadius.circular(20),
+                     boxShadow: [
+                       BoxShadow(color: AppColors.orangeShadow, offset: const Offset(0, 3), blurRadius: 0),
+                     ],
+                   ),
+                   child: Text(
+                     'SEVİYE ${_currentLevelIndex + 1}',
+                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                   ),
+                )
+            ],
+          ),
         ],
       ),
+    );
+  }
+
+  void _showOutOfLivesDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Kalplerin Bitti! 💔', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.berryRed)),
+        content: const Text(
+          'Süper kahraman yoruldu! Oyuna devam etmek için sihirli videoyu izle ve anında +5 kalp kazan!',
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              NeumorphicGameButton(
+                color: AppColors.leafGreen,
+                shadowColor: AppColors.leafGreenShadow,
+                width: 220,
+                height: 55,
+                borderRadius: 20,
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _showRewardedAdAndRefillLives();
+                },
+                child: const Text(
+                  '🎬 VİDEOYU İZLE (+5 ❤️)', 
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _exitGame();
+                },
+                child: const Text('Ana Menüye Dön', style: TextStyle(color: AppColors.gray, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  void _showRewardedAdAndRefillLives() {
+    setState(() => _isLoading = true);
+    AdMobService().showRewardedAd(
+      onRewardEarned: () async {
+        if (_childProfile != null) {
+          _childProfile = _childProfile!.copyWith(lives: 5);
+          await _childRepo.updateLives(widget.childId, 5);
+        }
+      },
+      onAdClosed: () {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            // Eğer reklamı yarıda kapattıysa kalp dolmamış olabilir
+            if ((_childProfile?.lives ?? 0) == 0) {
+               _showOutOfLivesDialog();
+            } else {
+               _showFeedback = false;
+               _selectedAnswer = null;
+               _generateQuestion(); // Yeni bir başlangıç
+            }
+          });
+        }
+      },
+      onAdFailedToLoad: () async {
+        // Eğer reklam yüklenemediyse çocuğu mağdur etmemek için hediye verebiliriz
+        if (_childProfile != null) {
+          _childProfile = _childProfile!.copyWith(lives: 5);
+          await _childRepo.updateLives(widget.childId, 5);
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reklam yüklenemedi. Sana +5 kalp hediye! 🎁')));
+          setState(() {
+            _isLoading = false;
+            _showFeedback = false;
+            _selectedAnswer = null;
+            _generateQuestion();
+          });
+        }
+      },
     );
   }
 
