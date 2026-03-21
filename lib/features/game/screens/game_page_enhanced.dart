@@ -637,7 +637,7 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
               child: Text(
                 '$_num1 $_operator $_num2',
                 style: const TextStyle(
-                  fontSize: 72,
+                  fontSize: 60,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 4,
                 ),
@@ -710,63 +710,54 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
   }) {
     bool isWin = title.isEmpty || title == 'MÜKEMMEL!';
     
-    return Container(
-      color: Colors.black54, // Overlay
-      child: Center(
-        child: Container(
-          margin: const EdgeInsets.all(24),
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (title.isNotEmpty) ...[
+            Text(
+              title.toUpperCase(),
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                color: isWin ? AppColors.orange : AppColors.berryRed,
+                shadows: const [Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4)],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+          Text(
+            isWin ? '🎉' : '💪',
+            style: const TextStyle(fontSize: 100),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (title.isNotEmpty) ...[
-                Text(
-                  title.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    color: isWin ? AppColors.orange : AppColors.berryRed,
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-              Text(
-                isWin ? '🎉' : '💪',
-                style: const TextStyle(fontSize: 80),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.gray,
-                ),
-              ),
-              const SizedBox(height: 48),
-              NeumorphicGameButton(
-                color: isWin ? AppColors.orange : AppColors.oceanBlue,
-                shadowColor: isWin ? AppColors.orangeShadow : AppColors.oceanBlueShadow,
-                width: 200,
-                height: 60,
-                onPressed: isWin ? _exitGame : _startGame,
-                child: Text(
-                  isWin ? 'DEVAM ET' : 'TEKRAR DENE',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-            ],
+          const SizedBox(height: 32),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              shadows: [Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4)],
+            ),
           ),
-        ),
+          const SizedBox(height: 48),
+          NeumorphicGameButton(
+            color: isWin ? AppColors.orange : AppColors.oceanBlue,
+            shadowColor: isWin ? AppColors.orangeShadow : AppColors.oceanBlueShadow,
+            width: 200,
+            height: 60,
+            onPressed: isWin ? _exitGame : _startGame,
+            child: Text(
+              isWin ? 'DEVAM ET' : 'TEKRAR DENE',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

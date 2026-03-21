@@ -827,61 +827,52 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
       ),
     );
   }
-   Widget _buildResultCard({required String title, required String message}) {
-    return Container(
-      color: Colors.black54, // Overlay
-      child: Center(
-        child: Container(
-          margin: const EdgeInsets.all(24),
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (title.isNotEmpty) ...[
-                Text(
-                  title.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.orange,
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-              const Text('🎉', style: TextStyle(fontSize: 80)),
-              const SizedBox(height: 24),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.gray,
-                ),
-              ),
-              const SizedBox(height: 48),
-              NeumorphicGameButton(
+  Widget _buildResultCard({required String title, required String message}) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (title.isNotEmpty) ...[
+            Text(
+              title.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
                 color: AppColors.orange,
-                shadowColor: AppColors.orangeShadow,
-                width: 200,
-                height: 60,
-                onPressed: _exitGame,
-                child: const Text(
-                  'DEVAM ET',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
+                shadows: [Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4)],
               ),
-            ],
+            ),
+            const SizedBox(height: 24),
+          ],
+          const Text('🎉', style: TextStyle(fontSize: 100)),
+          const SizedBox(height: 32),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              shadows: [Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4)],
+            ),
           ),
-        ),
+          const SizedBox(height: 48),
+          NeumorphicGameButton(
+            color: AppColors.orange,
+            shadowColor: AppColors.orangeShadow,
+            width: 200,
+            height: 60,
+            onPressed: _exitGame,
+            child: const Text(
+              'DEVAM ET',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -903,51 +894,44 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
       message += '\n+$_lastLevelGift Puan Hediye!';
     }
 
-    return Container(
-      color: Colors.black54, // Overlay
-      child: Center(
-        child: Container(
-          margin: const EdgeInsets.all(24),
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (title.isNotEmpty) ...[
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.orange,
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-              Text(
-                _isNextLevelUnlocked ? '🎉' : '💪',
-                style: const TextStyle(fontSize: 80),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.gray,
-                ),
-              ),
-              const SizedBox(height: 48),
-              NeumorphicGameButton(
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (title.isNotEmpty) ...[
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
                 color: AppColors.orange,
-                shadowColor: AppColors.orangeShadow,
-                width: 200,
-                height: 60,
-                onPressed: _isNextLevelUnlocked 
+                shadows: [Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4)],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+          Text(
+            _isNextLevelUnlocked ? '🎉' : '💪',
+            style: const TextStyle(fontSize: 100),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              shadows: [Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4)],
+            ),
+          ),
+          const SizedBox(height: 48),
+          NeumorphicGameButton(
+            color: AppColors.orange,
+            shadowColor: AppColors.orangeShadow,
+            width: 200,
+            height: 60,
+            onPressed: _isNextLevelUnlocked 
                   ? () {
                       setState(() {
                         _currentLevelIndex++;
@@ -972,8 +956,6 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
               ),
             ],
           ),
-        ),
-      ),
     );
   }
 
@@ -1001,13 +983,13 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
   int _targetForDifficulty(String difficulty) {
     switch (difficulty) {
       case 'kolay':
-        return 5;
+        return 10;
       case 'orta':
-        return 7;
+        return 10;
       case 'zor':
         return 10;
       default:
-        return 5;
+        return 10;
     }
   }
 

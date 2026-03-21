@@ -73,7 +73,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
   }
 
   void _generateRound() {
-    int count = 3 + (_round ~/ 2); // Start with 3, increase as rounds go
+    int count = 4; // ALWAYS 4
     int maxVal = 10 * _round;
     
     Set<int> nums = {};
@@ -88,7 +88,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
     });
   }
 
-  void _onNumberDrop(int num) {
+  void _onNumberTap(int num) {
     if (_isGameFinished) return;
     
     List<int> sorted = List.from(_currentNumbers)..sort();
@@ -279,37 +279,31 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
                   ),
                 ),
                 
-                // DRAG TARGET AREA (Slots)
+                // TARGET AREA (Slots)
                 Expanded(
                   flex: 3,
                   child: Center(
-                    child: DragTarget<int>(
-                      onWillAccept: (data) => !_userSelection.contains(data),
-                      onAccept: (data) => _onNumberDrop(data),
-                      builder: (context, candidateData, rejectedData) {
-                        return Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.symmetric(horizontal: 24),
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2), // Frosted glass look
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
-                          ),
-                          child: Wrap(
-                            spacing: 12,
-                            runSpacing: 12, // vertical spacing
-                            alignment: WrapAlignment.center,
-                            runAlignment: WrapAlignment.center,
-                            children: _userSelection.isEmpty 
-                              ? List.generate(_currentNumbers.length, (i) => _buildEmptySlot())
-                              : [
-                                  ..._userSelection.map((n) => _buildNumberChip(n, isActive: true)),
-                                  ...List.generate(_currentNumbers.length - _userSelection.length, (i) => _buildEmptySlot())
-                                ],
-                          ),
-                        );
-                      },
+                    child: Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2), // Frosted glass look
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
+                      ),
+                      child: Wrap(
+                        spacing: 12,
+                        runSpacing: 12, // vertical spacing
+                        alignment: WrapAlignment.center,
+                        runAlignment: WrapAlignment.center,
+                        children: _userSelection.isEmpty 
+                          ? List.generate(_currentNumbers.length, (i) => _buildEmptySlot())
+                          : [
+                              ..._userSelection.map((n) => _buildNumberChip(n, isActive: true)),
+                              ...List.generate(_currentNumbers.length - _userSelection.length, (i) => _buildEmptySlot())
+                            ],
+                      ),
                     ),
                   ),
                 ),
@@ -348,17 +342,9 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
                           alignment: WrapAlignment.center,
                           children: _currentNumbers
                               .where((n) => !_userSelection.contains(n))
-                              .map((n) => Draggable<int>(
-                                    data: n,
-                                    feedback: Material(
-                                      color: Colors.transparent,
-                                      child: _buildNumberChip(n, isFeedback: true),
-                                    ),
-                                    childWhenDragging: Opacity(
-                                      opacity: 0,
-                                      child: _buildNumberChip(n),
-                                    ),
-                                    child: _buildNumberChip(n),
+                              .map((n) => _buildNumberChip(
+                                    n,
+                                    onTap: () => _onNumberTap(n),
                                   ))
                               .toList(),
                         ),
@@ -388,57 +374,50 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
 
   Widget _buildResultCard() {
     return Container(
-      color: Colors.black54, // Overlay
+      color: AppColors.cloudBlue,
       child: Center(
-        child: Container(
-          margin: const EdgeInsets.all(24),
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                '🎉',
-                style: TextStyle(fontSize: 80),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              '🎉',
+              style: TextStyle(fontSize: 100),
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              'Harika iş çıkardın, tebrikler!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                shadows: [Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4)],
               ),
-              const SizedBox(height: 24),
-              const Text(
-                'Harika iş çıkardın, tebrikler!',
-                textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 48),
+            NeumorphicGameButton(
+              color: AppColors.orange,
+              shadowColor: AppColors.orangeShadow,
+              width: 200,
+              height: 60,
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'DEVAM ET',
                 style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.gray,
                 ),
               ),
-              const SizedBox(height: 48),
-              NeumorphicGameButton(
-                color: AppColors.orange,
-                shadowColor: AppColors.orangeShadow,
-                width: 200,
-                height: 60,
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'DEVAM ET',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
 
-  Widget _buildNumberChip(int n, {bool isActive = false, bool isFeedback = false}) {
+  Widget _buildNumberChip(int n, {bool isActive = false, bool isFeedback = false, VoidCallback? onTap}) {
     // If active (placed in slot), maybe show it differently? 
     // Actually, stick to the style.
     return NeumorphicGameButton(
@@ -446,7 +425,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
       height: isFeedback ? 80 : 70,
       color: _getNumberColor(n),
       shadowColor: _getNumberShadowColor(n),
-      onPressed: null, // It's draggable
+      onPressed: onTap,
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: Text(

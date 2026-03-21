@@ -401,47 +401,40 @@ class _BalloonPopGameState extends State<BalloonPopGame>
 
   Widget _buildResultCard() {
     return Container(
-      color: Colors.black54,
+      color: AppColors.cloudBlue,
       child: Center(
-        child: Container(
-          margin: const EdgeInsets.all(24),
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('🎉', style: TextStyle(fontSize: 80)),
-              const SizedBox(height: 24),
-              const Text(
-                'Harika iş çıkardın, tebrikler!',
-                textAlign: TextAlign.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('🎉', style: TextStyle(fontSize: 100)),
+            const SizedBox(height: 32),
+            const Text(
+              'Harika iş çıkardın, tebrikler!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                shadows: [Shadow(color: Colors.black26, offset: Offset(2, 2), blurRadius: 4)],
+              ),
+            ),
+            const SizedBox(height: 48),
+            NeumorphicGameButton(
+              color: AppColors.orange,
+              shadowColor: AppColors.orangeShadow,
+              width: 200,
+              height: 60,
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'DEVAM ET',
                 style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.gray,
                 ),
               ),
-              const SizedBox(height: 48),
-              NeumorphicGameButton(
-                color: AppColors.orange,
-                shadowColor: AppColors.orangeShadow,
-                width: 200,
-                height: 60,
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'DEVAM ET',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
