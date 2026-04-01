@@ -1,50 +1,60 @@
 class ChildProfile {
   final int? id;
   final String name;
-  final int age;
+  final DateTime birthDate;
   final String avatarId;
   final int currentLevel;
   final int totalScore;
-  final int lives; // NEW: Can (Kalp) Sistemi
+  final int lives;
   final DateTime createdAt;
 
   ChildProfile({
     this.id,
     required this.name,
-    required this.age,
+    required this.birthDate,
     required this.avatarId,
     this.currentLevel = 0,
     this.totalScore = 0,
-    this.lives = 5, // Standart 5 can ile başlar
+    this.lives = 5,
     required this.createdAt,
   });
+
+  // Calculate current age from birth date
+  int get age {
+    final now = DateTime.now();
+    int age = now.year - birthDate.year;
+    if (now.month < birthDate.month || (now.month == birthDate.month && now.day < birthDate.day)) {
+      age--;
+    }
+    return age;
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'age': age,
+        'birth_date': birthDate.toIso8601String(),
         'avatar_id': avatarId,
         'current_level': currentLevel,
         'total_score': totalScore,
-        'lives': lives, // NEW: DB'ye kaydet
+        'lives': lives,
         'created_at': createdAt.toIso8601String(),
       };
 
   static ChildProfile fromJson(Map<String, dynamic> json) => ChildProfile(
         id: json['id'] as int?,
         name: json['name'] as String,
-        age: json['age'] as int,
+        birthDate: DateTime.parse(json['birth_date'] as String),
         avatarId: json['avatar_id'] as String,
         currentLevel: json['current_level'] as int,
         totalScore: json['total_score'] as int,
-        lives: (json['lives'] as int?) ?? 5, // NEW: DB'den oku, yoksa 5
+        lives: (json['lives'] as int?) ?? 5,
         createdAt: DateTime.parse(json['created_at'] as String),
       );
 
   ChildProfile copyWith({
     int? id,
     String? name,
-    int? age,
+    DateTime? birthDate,
     String? avatarId,
     int? currentLevel,
     int? totalScore,
@@ -54,7 +64,7 @@ class ChildProfile {
     return ChildProfile(
       id: id ?? this.id,
       name: name ?? this.name,
-      age: age ?? this.age,
+      birthDate: birthDate ?? this.birthDate,
       avatarId: avatarId ?? this.avatarId,
       currentLevel: currentLevel ?? this.currentLevel,
       totalScore: totalScore ?? this.totalScore,

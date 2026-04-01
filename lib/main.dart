@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'data/repositories/child_repository.dart';
 import 'features/child_profile/screens/create_profile_screen.dart';
-import 'features/game/screens/game_hub_screen.dart';
+import 'features/child_profile/screens/profile_selection_screen.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -76,10 +76,10 @@ class _BootScreenState extends State<BootScreen> {
 
       if (mounted) {
         if (profiles.isNotEmpty) {
-          // Profile exists -> Go to Level Map
+          // Profile exists -> Go to Profile Selection
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => GameHubScreen(childId: profiles.first.id!),
+              builder: (context) => const ProfileSelectionScreen(),
             ),
           );
         } else {

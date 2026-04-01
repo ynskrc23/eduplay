@@ -10,6 +10,7 @@ import '../../../data/models/child_profile.dart';
 import '../../../data/repositories/child_repository.dart';
 import '../../../core/services/sound_service.dart';
 import '../../parent_panel/screens/parent_panel_screen.dart';
+import '../../child_profile/screens/profile_selection_screen.dart';
 
 class GameHubScreen extends StatefulWidget {
   final int childId;
@@ -244,6 +245,24 @@ class _GameHubScreenState extends State<GameHubScreen> {
                       ),
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              NeumorphicGameButton(
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                color: Colors.white,
+                shadowColor: Colors.blueGrey.shade200,
+                onPressed: () {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const ProfileSelectionScreen()),
+                    (route) => false,
+                  );
+                },
+                child: const Icon(
+                  Icons.people_rounded,
+                  color: AppColors.cloudBlue,
                 ),
               ),
               const SizedBox(width: 12),
