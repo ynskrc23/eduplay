@@ -333,10 +333,10 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
         _wrongCount,
       );
       _currentSessionId = null;
-      
-      // Oyun tamamlandı, reklam göster (her 3 oyunda bir)
-      AdMobService().onGameCompleted();
     }
+
+    // Oyun tamamlandı veya çıkılıyor, reklam göster (Servis kendi içinde süre kontrolü yapar)
+    AdMobService().onGameCompleted();
 
     if (mounted) {
       if (Navigator.canPop(context)) {

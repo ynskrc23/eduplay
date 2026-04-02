@@ -16,7 +16,7 @@ class AdMobService {
   // Süre kontrolü (Cooldown) eklendi
   DateTime? _lastAdShowTime;
   static const int _minSecondsBetweenAds =
-      300; // İki reklam arasında en az kaç saniye olması gerektiği (Örn: 300 sn)
+      180; // İki reklam arasında en az kaç saniye olması gerektiği (3 dk)
 
   // AdMob App ID ve Ad Unit ID'leri (Platform bazlı)
   // Android

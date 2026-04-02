@@ -89,7 +89,13 @@ class _ParentPanelScreenState extends State<ParentPanelScreen> {
           widget.childProfile.name.toUpperCase(),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        subtitle: Text('Toplam Puan: ${widget.childProfile.totalScore}'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Yaşınız: ${widget.childProfile.age}'),
+            Text('${widget.childProfile.totalScore} puan'),
+          ],
+        ),
         trailing: TextButton(
           onPressed: () {
             Navigator.of(context).pushAndRemoveUntil(

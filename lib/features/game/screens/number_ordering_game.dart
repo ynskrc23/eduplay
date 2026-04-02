@@ -400,7 +400,10 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
               shadowColor: AppColors.orangeShadow,
               width: 200,
               height: 60,
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                AdMobService().onGameCompleted();
+                Navigator.pop(context);
+              },
               child: const Text(
                 'DEVAM ET',
                 style: TextStyle(
