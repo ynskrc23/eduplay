@@ -10,6 +10,7 @@ import '../../../data/repositories/child_repository.dart';
 import '../../../data/repositories/game_session_repository.dart';
 import '../../../data/models/child_profile.dart';
 import '../../../data/models/game_session.dart';
+import '../services/difficulty_service.dart';
 import '../services/question_generator.dart';
 import '../../../core/services/sound_service.dart';
 import '../../../core/services/admob_service.dart';
@@ -960,27 +961,20 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
   }
 
   List<QuestionRule> _buildRulesForSelection(String operation, String difficulty) {
-    switch (difficulty) {
-      case 'kolay':
-        return [
-          QuestionRule(levelId: 0, operation: operation, minOperand: 1, maxOperand: 9, allowNegative: false),
-        ];
-      case 'orta':
-        return [
-          QuestionRule(levelId: 0, operation: operation, minOperand: 10, maxOperand: 99, allowNegative: false),
-        ];
-      case 'zor':
-        return [
-          QuestionRule(levelId: 0, operation: operation, minOperand: 100, maxOperand: 999, allowNegative: false),
-        ];
-      default:
-        return [
-          QuestionRule(levelId: 0, operation: operation, minOperand: 1, maxOperand: 9, allowNegative: false),
-        ];
-    }
+    if (_childProfile == null) return [];
+    
+    return DifficultyService.getRules(
+      _childProfile!.age, 
+      operation, 
+      difficulty
+    );
   }
 
   int _targetForDifficulty(String difficulty) {
+    if (_childProfile != null && _childProfile!.age <= 5) {
+      return 5; // Okul öncesi için 5 soru yeterli
+    }
+    
     switch (difficulty) {
       case 'kolay':
         return 10;

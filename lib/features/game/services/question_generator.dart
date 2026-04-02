@@ -73,9 +73,9 @@ class QuestionGenerator {
                num1 = num2 * quotient;
             }
             answer = quotient;
-          } else { // Kolay - 1 basamaklı
-            num2 = _getRandomInt(1, 5);
-            int quotient = _getRandomInt(1, 5);
+          } else { // Kolay - Küçük Sayılar
+            num2 = _getRandomInt(1, max(2, rule.maxOperand ~/ 2));
+            int quotient = _getRandomInt(1, max(2, rule.maxOperand));
             num1 = num2 * quotient;
             answer = quotient;
           }
