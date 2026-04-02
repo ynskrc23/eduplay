@@ -209,7 +209,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
         _correctCount++;
         _comboCount++;
         
-        int earnedPoints = 10;
+        int earnedPoints = 1;
         // _feedbackMessage set edilmiyor, böylece ekranda "Doğru!" yazısı çıkmayacak
         
         _confettiController.play();
@@ -299,7 +299,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
         final nextLevel = _levels[_currentLevelIndex + 1];
         if ((updatedProfile?.totalScore ?? 0) >= nextLevel.unlockScore) {
           unlocked = true;
-          levelGift = 10;
+          levelGift = 1;
           await _childRepo.updateScore(widget.childId, levelGift);
           updatedProfile = await _childRepo.getProfileById(widget.childId);
         }
