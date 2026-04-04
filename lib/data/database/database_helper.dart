@@ -43,14 +43,14 @@ class DatabaseHelper {
           await db.execute('ALTER TABLE child_profile ADD COLUMN lives INTEGER NOT NULL DEFAULT 5');
         }
         if (oldVersion < 6) {
-          // 'age' kolonunu 'birth_date' ile değiştirme (basitlik için yeni kolon ekleyip eskiyi bırakıyoruz veya siliyoruz)
-          // SQLite'da kolon silmek zordur (tabloyu yeniden oluşturmak gerekir)
-          // Şimdilik sadece yeni kolonu ekleyelim.
+          // 'age' kolonunu 'birth_date' ile değiştirme
           await db.execute('ALTER TABLE child_profile ADD COLUMN birth_date TEXT');
           
-          // Mevcut verileri yaklaşık bir tarihle dolduralım (bugün - yaş)
-          final now = DateTime.now();
-          await db.execute("UPDATE child_profile SET birth_date = '${now.year - 7}-01-01T00:00:00.000'"); 
+          // Mevcut verileri gerçek yaşlarına (age kolonu) göre dolduralım (bugün - yaş)
+          await db.execute('''
+            UPDATE child_profile 
+            SET birth_date = (strftime('%Y', 'now') - age) || '-01-01T00:00:00.000'
+          '''); 
         }
         if (oldVersion < 7) {
           // 'age' kolonunu güvenli bir şekilde silmek için (NOT NULL hatasını önlemek) tabloyu yeniden oluşturuyoruz
