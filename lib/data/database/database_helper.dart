@@ -35,17 +35,45 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 5, // Sürüm 5'e yükseltildi (lives kolonu için)
+      version: 7, // Sürüm 7: age kolonunu tamamen kaldırmak için tabloyu yeniden oluşturma
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          // If we are at version 1, we need to add the new levels.
-          // For simplicity in this dev environment, we can re-run the creation logic or specific seeds.
-          // But usually, deleting and re-installing is cleaner for seed changes.
-        }
         if (oldVersion < 5) {
           // 'lives' kolonunu ekle (can sistemi, varsayılan 5 can)
           await db.execute('ALTER TABLE child_profile ADD COLUMN lives INTEGER NOT NULL DEFAULT 5');
+        }
+        if (oldVersion < 6) {
+          // 'age' kolonunu 'birth_date' ile değiştirme (basitlik için yeni kolon ekleyip eskiyi bırakıyoruz veya siliyoruz)
+          // SQLite'da kolon silmek zordur (tabloyu yeniden oluşturmak gerekir)
+          // Şimdilik sadece yeni kolonu ekleyelim.
+          await db.execute('ALTER TABLE child_profile ADD COLUMN birth_date TEXT');
+          
+          // Mevcut verileri yaklaşık bir tarihle dolduralım (bugün - yaş)
+          final now = DateTime.now();
+          await db.execute("UPDATE child_profile SET birth_date = '${now.year - 7}-01-01T00:00:00.000'"); 
+        }
+        if (oldVersion < 7) {
+          // 'age' kolonunu güvenli bir şekilde silmek için (NOT NULL hatasını önlemek) tabloyu yeniden oluşturuyoruz
+          await db.execute('''
+            CREATE TABLE child_profile_new ( 
+              id INTEGER PRIMARY KEY AUTOINCREMENT, 
+              name TEXT NOT NULL,
+              birth_date TEXT NOT NULL,
+              avatar_id TEXT NOT NULL,
+              current_level INTEGER NOT NULL,
+              total_score INTEGER NOT NULL,
+              lives INTEGER NOT NULL DEFAULT 5,
+              created_at TEXT NOT NULL
+            )
+          ''');
+          
+          await db.execute('''
+            INSERT INTO child_profile_new (id, name, birth_date, avatar_id, current_level, total_score, lives, created_at)
+            SELECT id, name, birth_date, avatar_id, current_level, total_score, lives, created_at FROM child_profile
+          ''');
+          
+          await db.execute('DROP TABLE child_profile');
+          await db.execute('ALTER TABLE child_profile_new RENAME TO child_profile');
         }
       },
     );
@@ -63,7 +91,7 @@ class DatabaseHelper {
       CREATE TABLE child_profile ( 
         id $idType, 
         name $textType,
-        age $intType,
+        birth_date $textType,
         avatar_id $textType,
         current_level $intType,
         total_score $intType,

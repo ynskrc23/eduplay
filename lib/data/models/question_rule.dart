@@ -6,6 +6,16 @@ class QuestionRule {
   final int maxOperand;
   final bool allowNegative;
 
+  // Runtime-only fields (NOT stored in DB)
+  final int? maxResult;       // Sonucun üst sınırı (Örn: toplam 25'i geçmesin)
+  final int? minResult;       // Sonucun alt sınırı (Örn: toplam en az 100 olsun)
+  final int? minNum1;         // İlk sayının min değeri
+  final int? maxNum1;         // İlk sayının max değeri
+  final int? minNum2;         // İkinci sayının min değeri
+  final int? maxNum2;         // İkinci sayının max değeri
+  final List<int>? multiplicationBases; // Belirli çarpım tabloları (Örn: [4, 5, 6])
+  final int? maxMultiplier;   // Çarpımda çarpanın üst sınırı (Örn: 10'a kadar)
+
   QuestionRule({
     this.id,
     required this.levelId,
@@ -13,6 +23,14 @@ class QuestionRule {
     required this.minOperand,
     required this.maxOperand,
     required this.allowNegative,
+    this.maxResult,
+    this.minResult,
+    this.minNum1,
+    this.maxNum1,
+    this.minNum2,
+    this.maxNum2,
+    this.multiplicationBases,
+    this.maxMultiplier,
   });
 
   Map<String, dynamic> toJson() => {

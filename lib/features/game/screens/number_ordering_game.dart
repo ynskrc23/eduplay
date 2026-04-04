@@ -8,6 +8,8 @@ import '../../../core/services/admob_service.dart';
 import '../../../data/models/game_session.dart';
 import '../../../data/repositories/game_session_repository.dart';
 import '../../../data/repositories/game_repository.dart';
+import '../../../data/repositories/child_repository.dart';
+import '../../../data/models/child_profile.dart';
 import '../../../data/models/game.dart';
 
 class NumberOrderingGame extends StatefulWidget {
@@ -31,24 +33,26 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
 
   final GameSessionRepository _sessionRepo = GameSessionRepository();
   final GameRepository _gameRepo = GameRepository();
+  final ChildRepository _childRepo = ChildRepository();
   int? _currentSessionId;
   int _correctCount = 0;
   int _wrongCount = 0;
   bool _roundMistakeMade = false;
   DateTime? _startedAt;
   Game? _game;
+  ChildProfile? _childProfile;
 
   @override
   void initState() {
     super.initState();
     _confettiController = ConfettiController(duration: const Duration(seconds: 1));
     _initSession();
-    _generateRound();
   }
 
   Future<void> _initSession() async {
     _startedAt = DateTime.now();
     _game = await _gameRepo.getGameByCode('NUMBER_ORDERING');
+    _childProfile = await _childRepo.getProfileById(widget.childId);
     final gameId = _game?.id ?? 1;
 
     final session = GameSession(
@@ -58,6 +62,7 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
       startedAt: _startedAt!,
     );
     _currentSessionId = await _sessionRepo.createSession(session);
+    if (mounted) _generateRound();
   }
 
   Future<void> _endSession() async {
@@ -75,6 +80,12 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
   void _generateRound() {
     int count = 4; // ALWAYS 4
     int maxVal = 10 * _round;
+    
+    // Okul öncesi (≤ 5 yaş) için en büyük sayı 20
+    final bool isPreSchool = (_childProfile?.age ?? 7) <= 5;
+    if (isPreSchool && maxVal > 20) {
+      maxVal = 20;
+    }
     
     Set<int> nums = {};
     while(nums.length < count) {
@@ -400,7 +411,10 @@ class _NumberOrderingGameState extends State<NumberOrderingGame> {
               shadowColor: AppColors.orangeShadow,
               width: 200,
               height: 60,
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                AdMobService().onGameCompleted();
+                Navigator.pop(context);
+              },
               child: const Text(
                 'DEVAM ET',
                 style: TextStyle(

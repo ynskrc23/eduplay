@@ -10,6 +10,7 @@ import '../../../data/repositories/child_repository.dart';
 import '../../../data/repositories/game_session_repository.dart';
 import '../../../data/models/child_profile.dart';
 import '../../../data/models/game_session.dart';
+import '../services/difficulty_service.dart';
 import '../services/question_generator.dart';
 import '../../../core/services/sound_service.dart';
 import '../../../core/services/admob_service.dart';
@@ -209,7 +210,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
         _correctCount++;
         _comboCount++;
         
-        int earnedPoints = 10;
+        int earnedPoints = 1;
         // _feedbackMessage set edilmiyor, böylece ekranda "Doğru!" yazısı çıkmayacak
         
         _confettiController.play();
@@ -299,7 +300,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
         final nextLevel = _levels[_currentLevelIndex + 1];
         if ((updatedProfile?.totalScore ?? 0) >= nextLevel.unlockScore) {
           unlocked = true;
-          levelGift = 10;
+          levelGift = 1;
           await _childRepo.updateScore(widget.childId, levelGift);
           updatedProfile = await _childRepo.getProfileById(widget.childId);
         }
@@ -333,10 +334,10 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
         _wrongCount,
       );
       _currentSessionId = null;
-      
-      // Oyun tamamlandı, reklam göster (her 3 oyunda bir)
-      AdMobService().onGameCompleted();
     }
+
+    // Oyun tamamlandı veya çıkılıyor, reklam göster (Servis kendi içinde süre kontrolü yapar)
+    AdMobService().onGameCompleted();
 
     if (mounted) {
       if (Navigator.canPop(context)) {
@@ -960,24 +961,12 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
   }
 
   List<QuestionRule> _buildRulesForSelection(String operation, String difficulty) {
-    switch (difficulty) {
-      case 'kolay':
-        return [
-          QuestionRule(levelId: 0, operation: operation, minOperand: 1, maxOperand: 9, allowNegative: false),
-        ];
-      case 'orta':
-        return [
-          QuestionRule(levelId: 0, operation: operation, minOperand: 10, maxOperand: 99, allowNegative: false),
-        ];
-      case 'zor':
-        return [
-          QuestionRule(levelId: 0, operation: operation, minOperand: 100, maxOperand: 999, allowNegative: false),
-        ];
-      default:
-        return [
-          QuestionRule(levelId: 0, operation: operation, minOperand: 1, maxOperand: 9, allowNegative: false),
-        ];
-    }
+    if (_childProfile == null) return [];
+    return DifficultyService.getRules(
+      _childProfile!.age,
+      operation,
+      difficulty,
+    );
   }
 
   int _targetForDifficulty(String difficulty) {

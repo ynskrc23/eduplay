@@ -6,7 +6,7 @@ class DuoButton extends StatefulWidget {
   final Color color;
   final Color shadowColor;
   final double height;
-  final double width;
+  final double? width; // Changed to double?
 
   const DuoButton({
     super.key,
@@ -15,7 +15,7 @@ class DuoButton extends StatefulWidget {
     required this.color,
     required this.shadowColor,
     this.height = 50,
-    this.width = double.infinity,
+    this.width, // Defaults to null (expanded)
   });
 
   @override
@@ -29,52 +29,60 @@ class _DuoButtonState extends State<DuoButton> {
   Widget build(BuildContext context) {
     const double shadowHeight = 6.0;
     
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        widget.onPressed?.call();
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: SizedBox(
-        width: widget.width,
-        height: widget.height + shadowHeight,
-        child: Stack(
-          children: [
-            // Shadow
-            Positioned(
-              bottom: 0,
-              child: Container(
-                width: widget.width == double.infinity ? MediaQuery.of(context).size.width - 48 : widget.width,
-                height: widget.height,
-                decoration: BoxDecoration(
-                  color: widget.shadowColor,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-            // Top Layer
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 50),
-              bottom: _isPressed ? 0 : shadowHeight,
-              child: Container(
-                width: widget.width == double.infinity ? MediaQuery.of(context).size.width - 48 : widget.width,
-                height: widget.height,
-                decoration: BoxDecoration(
-                  color: widget.color,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    width: 1,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double finalWidth = widget.width ?? constraints.maxWidth;
+        
+        return GestureDetector(
+          onTapDown: (_) => setState(() => _isPressed = true),
+          onTapUp: (_) {
+            setState(() => _isPressed = false);
+            widget.onPressed?.call();
+          },
+          onTapCancel: () => setState(() => _isPressed = false),
+          child: SizedBox(
+            width: finalWidth,
+            height: widget.height + shadowHeight,
+            child: Stack(
+              children: [
+                // Shadow
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: widget.height,
+                    decoration: BoxDecoration(
+                      color: widget.shadowColor,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
-                alignment: Alignment.center,
-                child: widget.child,
-              ),
+                // Top Layer
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 50),
+                  bottom: _isPressed ? 0 : shadowHeight,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: widget.height,
+                    decoration: BoxDecoration(
+                      color: widget.color,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        width: 1,
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: widget.child,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }
     );
   }
 }

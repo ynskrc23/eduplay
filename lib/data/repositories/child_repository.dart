@@ -9,14 +9,25 @@ class ChildRepository {
   Future<ChildProfile> createProfile(ChildProfile profile) async {
     final db = await _dbHelper.database;
     final id = await db.insert('child_profile', profile.toJson());
-    return ChildProfile(
-      id: id,
-      name: profile.name,
-      age: profile.age,
-      avatarId: profile.avatarId,
-      currentLevel: profile.currentLevel,
-      totalScore: profile.totalScore,
-      createdAt: profile.createdAt,
+    return profile.copyWith(id: id);
+  }
+
+  Future<void> updateProfile(ChildProfile profile) async {
+    final db = await _dbHelper.database;
+    await db.update(
+      'child_profile',
+      profile.toJson(),
+      where: 'id = ?',
+      whereArgs: [profile.id],
+    );
+  }
+
+  Future<void> deleteProfile(int id) async {
+    final db = await _dbHelper.database;
+    await db.delete(
+      'child_profile',
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 

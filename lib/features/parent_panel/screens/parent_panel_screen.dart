@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../data/models/child_profile.dart';
 import '../../../data/models/game_session.dart';
 import '../../../data/repositories/game_session_repository.dart';
+import '../../child_profile/screens/profile_selection_screen.dart';
 
 class ParentPanelScreen extends StatefulWidget {
   final ChildProfile childProfile;
@@ -88,7 +89,22 @@ class _ParentPanelScreenState extends State<ParentPanelScreen> {
           widget.childProfile.name.toUpperCase(),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        subtitle: Text('Toplam Puan: ${widget.childProfile.totalScore}'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Yaşınız: ${widget.childProfile.age}'),
+            Text('${widget.childProfile.totalScore} puan'),
+          ],
+        ),
+        trailing: TextButton(
+          onPressed: () {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const ProfileSelectionScreen()),
+              (route) => false,
+            );
+          },
+          child: const Text('PROFİL DEĞİŞTİR'),
+        ),
       ),
     );
   }

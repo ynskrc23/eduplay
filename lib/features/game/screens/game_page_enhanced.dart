@@ -13,6 +13,7 @@ import '../../../data/repositories/game_session_repository.dart';
 import '../../../data/models/child_profile.dart';
 import '../../../data/models/game_session.dart';
 import '../services/question_generator.dart';
+import '../services/difficulty_service.dart';
 import '../../../core/services/sound_service.dart';
 import '../../../core/services/admob_service.dart';
 import '../../../core/app_colors.dart';
@@ -103,11 +104,21 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
            final rules = await _gameRepo.getRulesByLevelId(levels[_currentLevelIndex].id!);
            
             if (mounted) {
+              // Okul öncesi (≤ 5 yaş) için: sadece toplama ve çıkarma, orta seviye
+              // DifficultyService kuralları kullanılır (toplam ≤ 25, en büyük sayı ≤ 25)
+              List<QuestionRule> finalRules = rules;
+              if (profile.age <= 5) {
+                finalRules = [
+                  ...DifficultyService.getRules(profile.age, '+', 'orta'),
+                  ...DifficultyService.getRules(profile.age, '-', 'orta'),
+                ];
+              }
+
               setState(() {
                 _game = game;
                 _childProfile = profile;
                 _levels = levels;
-                _currentRules = rules;
+                _currentRules = finalRules;
               });
               await _startGame();
               if (mounted) {
@@ -284,10 +295,10 @@ class _GamePageEnhancedState extends State<GamePageEnhanced> with TickerProvider
         _wrongCount,
       );
       _currentSessionId = null;
-      
-      // Oyun tamamlandı, reklam göster (her 3 oyunda bir)
-      AdMobService().onGameCompleted();
     }
+
+    // Oyun tamamlandı veya çıkılıyor, reklam göster (Servis kendi içinde süre kontrolü yapar)
+    AdMobService().onGameCompleted();
 
     if (mounted) {
       if (Navigator.canPop(context)) {

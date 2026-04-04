@@ -10,6 +10,7 @@ import '../../../data/models/child_profile.dart';
 import '../../../data/repositories/child_repository.dart';
 import '../../../core/services/sound_service.dart';
 import '../../parent_panel/screens/parent_panel_screen.dart';
+import '../../child_profile/screens/profile_selection_screen.dart';
 
 class GameHubScreen extends StatefulWidget {
   final int childId;
@@ -161,89 +162,46 @@ class _GameHubScreenState extends State<GameHubScreen> {
   }
 
   Widget _buildHeader() {
+    String name = _childProfile?.name ?? "";
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+          Text(
+            name,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 24,
+              shadows: [
+                Shadow(
+                  color: Colors.black26,
+                  offset: Offset(2, 2),
+                  blurRadius: 4,
                 ),
-                child: Text(
-                  _childProfile?.avatarId ?? '🦊',
-                  style: const TextStyle(fontSize: 28),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    (_childProfile?.name ?? '').toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 20,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black12,
-                          offset: Offset(1, 1),
-                          blurRadius: 2,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      offset: const Offset(0, 4),
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.stars_rounded,
-                      color: AppColors.gold,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${_childProfile?.totalScore ?? 0}',
-                      style: const TextStyle(
-                        color: AppColors.darkText,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+              NeumorphicGameButton(
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                color: Colors.white,
+                shadowColor: Colors.blueGrey.shade200,
+                onPressed: () {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: (context) => const ProfileSelectionScreen()),
+                    (route) => false,
+                  );
+                },
+                child: const Icon(
+                  Icons.people_rounded,
+                  color: AppColors.cloudBlue,
                 ),
               ),
               const SizedBox(width: 12),
@@ -271,11 +229,13 @@ class _GameHubScreenState extends State<GameHubScreen> {
                 shadowColor: Colors.blueGrey.shade200,
                 onPressed: () {
                   if (_childProfile != null) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              ParentPanelScreen(childProfile: _childProfile!)),
-                    ).then((_) => _loadProfile());
+                    Navigator.of(context)
+                        .push(
+                          MaterialPageRoute(
+                              builder: (context) => ParentPanelScreen(
+                                  childProfile: _childProfile!)),
+                        )
+                        .then((_) => _loadProfile());
                   }
                 },
                 child: const Icon(Icons.settings_rounded,

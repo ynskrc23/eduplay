@@ -9,6 +9,7 @@ import '../../../core/widgets/feedback_overlay.dart';
 import '../../../data/models/game_session.dart';
 import '../../../data/repositories/game_session_repository.dart';
 import '../../../data/repositories/game_repository.dart';
+import '../../../data/repositories/child_repository.dart';
 import '../../../data/models/child_profile.dart';
 import '../../../data/models/game.dart';
 
@@ -25,7 +26,7 @@ class _BalloonPopGameState extends State<BalloonPopGame>
   late ConfettiController _confettiController;
   final Random _random = Random();
 
-  late int _targetNumber;
+  int _targetNumber = 1;
   List<_BalloonData> _balloons = [];
   int _round = 1;
   final int _totalRounds = 5;
@@ -37,11 +38,13 @@ class _BalloonPopGameState extends State<BalloonPopGame>
 
   final GameSessionRepository _sessionRepo = GameSessionRepository();
   final GameRepository _gameRepo = GameRepository();
+  final ChildRepository _childRepo = ChildRepository();
   int? _currentSessionId;
   int _correctCount = 0;
   int _wrongCount = 0;
   DateTime? _startedAt;
   Game? _game;
+  ChildProfile? _childProfile;
 
   @override
   void initState() {
@@ -50,24 +53,23 @@ class _BalloonPopGameState extends State<BalloonPopGame>
       duration: const Duration(seconds: 1),
     );
     _initSession();
-    _generateRound();
   }
 
   Future<void> _initSession() async {
     _startedAt = DateTime.now();
     _game = await _gameRepo.getGameByCode('BALLOON_POP');
+    _childProfile = await _childRepo.getProfileById(widget.childId);
     
-    // If BALLOON_POP doesn't exist yet, we'll use a placeholder or create it
-    // For now find any game or default to 1 (Math Race)
     final gameId = _game?.id ?? 1; 
 
     final session = GameSession(
       childId: widget.childId,
       gameId: gameId,
-      levelId: 1, // Default level
+      levelId: 1,
       startedAt: _startedAt!,
     );
     _currentSessionId = await _sessionRepo.createSession(session);
+    if (mounted) _generateRound();
   }
 
   Future<void> _endSession() async {
@@ -83,7 +85,10 @@ class _BalloonPopGameState extends State<BalloonPopGame>
   }
 
   void _generateRound() {
-    _targetNumber = _random.nextInt(15) + 1;
+    // Okul öncesi (≤ 5 yaş) için en büyük sayı 20, diğerleri için 15 (mevcut)
+    final bool isPreSchool = (_childProfile?.age ?? 7) <= 5;
+    final int maxTarget = isPreSchool ? 20 : 15;
+    _targetNumber = _random.nextInt(maxTarget) + 1;
     Set<int> ops = {_targetNumber};
     // 4 benzersiz sayı oluştur (Akıllı çeldiriciler eklendi)
     while (ops.length < 4) {
@@ -424,7 +429,10 @@ class _BalloonPopGameState extends State<BalloonPopGame>
               shadowColor: AppColors.orangeShadow,
               width: 200,
               height: 60,
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                AdMobService().onGameCompleted();
+                Navigator.pop(context);
+              },
               child: const Text(
                 'DEVAM ET',
                 style: TextStyle(
