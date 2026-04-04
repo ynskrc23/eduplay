@@ -165,6 +165,8 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
   }
 
   Widget _buildOperationGrid() {
+    final bool isPreSchool = (_childProfile?.age ?? 7) <= 5;
+
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -175,8 +177,10 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
       children: [
         _buildOpCard('+', 'TOPLAMA', AppColors.sunYellow, AppColors.sunYellowShadow),
         _buildOpCard('-', 'ÇIKARMA', AppColors.oceanBlue, AppColors.oceanBlueShadow),
-        _buildOpCard('*', 'ÇARPMA', AppColors.berryRed, AppColors.berryRedShadow),
-        _buildOpCard('/', 'BÖLME', AppColors.leafGreen, AppColors.leafGreenShadow),
+        if (!isPreSchool) _buildOpCard('*', 'ÇARPMA', AppColors.berryRed, AppColors.berryRedShadow),
+        if (isPreSchool) const SizedBox(),
+        if (!isPreSchool) _buildOpCard('/', 'BÖLME', AppColors.leafGreen, AppColors.leafGreenShadow),
+        if (isPreSchool) const SizedBox(),
       ],
     );
   }

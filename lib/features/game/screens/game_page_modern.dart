@@ -962,19 +962,14 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
 
   List<QuestionRule> _buildRulesForSelection(String operation, String difficulty) {
     if (_childProfile == null) return [];
-    
     return DifficultyService.getRules(
-      _childProfile!.age, 
-      operation, 
-      difficulty
+      _childProfile!.age,
+      operation,
+      difficulty,
     );
   }
 
   int _targetForDifficulty(String difficulty) {
-    if (_childProfile != null && _childProfile!.age <= 5) {
-      return 5; // Okul öncesi için 5 soru yeterli
-    }
-    
     switch (difficulty) {
       case 'kolay':
         return 10;
