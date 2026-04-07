@@ -515,7 +515,7 @@ class _GamePageModernState extends State<GamePageModern> with TickerProviderStat
                   _showRewardedAdAndRefillLives();
                 },
                 child: const Text(
-                  '🎬 VİDEOYU İZLE (+5 ❤️)', 
+                  '🎬 REKLAM İZLE (+5 ❤️)', 
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)
                 ),
               ),

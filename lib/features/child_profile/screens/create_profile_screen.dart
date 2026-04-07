@@ -39,7 +39,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   }
 
   void _selectBirthDate(BuildContext context) {
-    DateTime initialDate = _selectedBirthDate ?? DateTime.now().subtract(const Duration(days: 365 * 6));
+    DateTime initialDate = _selectedBirthDate ?? DateTime.now();
     
     showCupertinoModalPopup(
       context: context,

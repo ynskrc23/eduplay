@@ -67,6 +67,14 @@ class AdMobService {
   /// AdMob SDK'yı başlat
   Future<void> initialize() async {
     await MobileAds.instance.initialize();
+
+    // Aile Politikası (Family Policy) için reklamları çocuklara yönelik olarak yapılandır
+    RequestConfiguration requestConfiguration = RequestConfiguration(
+      tagForChildDirectedTreatment: TagForChildDirectedTreatment.yes,
+      maxAdContentRating: MaxAdContentRating.g,
+    );
+    MobileAds.instance.updateRequestConfiguration(requestConfiguration);
+
     _loadInterstitialAd();
     _loadRewardedAd();
   }
